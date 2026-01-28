@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Comments Modal Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1877F2;
+            --primary-hover: #166fe5;
+            --bg-overlay: rgba(0, 0, 0, 0.4);
+            --modal-bg: #ffffff;
+            --text-main: #1c1e21;
+            --radius: 12px;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow: hidden;
+        }
+
+        /* Trigger Button */
+        .btn-open {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(24, 119, 242, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-open:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(24, 119, 242, 0.3);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-overlay);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Modal Container */
+        .modal-container {
+            background: var(--modal-bg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Header */
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e4e6eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: #65676b;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-close:hover {
+            background-color: #f0f2f5;
+            color: var(--text-main);
+        }
+
+        /* Body */
+        .modal-body {
+            padding: 0;
+            overflow-y: auto;
+            flex: 1;
+            background: #f0f2f5; /* FB background color */
+        }
+
+        .fb-comments-wrapper {
+            background: #fff;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #65676b;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .modal-footer {
+            padding: 12px 24px;
+            border-top: 1px solid #e4e6eb;
+            background: #fff;
+            text-align: right;
+            font-size: 12px;
+            color: #65676b;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- FB SDK Root -->
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v18.0&appId=YOUR_APP_ID" nonce="random"></script>
+
+    <!-- Main Trigger -->
+    <button class="btn-open" onclick="openModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+        Mở Bình Luận
+    </button>
+
+    <!-- Modal Structure -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Bình luận cộng đồng</h3>
+                <button class="btn-close" onclick="closeModal(null, true)">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="fb-comments-wrapper">
+                    <!-- FB Comments Plugin -->
+                    <!-- Lưu ý: data-href cần là URL thực tế khi deploy. Localhost có thể không hoạt động tốt. -->
+                    <div class="fb-comments" 
+                         data-href="https://developers.facebook.com/docs/plugins/comments#configurator" 
+                         data-width="100%" 
+                         data-numposts="5">
+                    </div>
+                    <div class="loading" id="fbLoading">Đang tải plugin Facebook...</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                Powered by Facebook Comments
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('modalOverlay');
+        const loading = document.getElementById('fbLoading');
+
+        function openModal() {
+            modal.classList.add('active');
+            // Hack để render lại FB plugin nếu cần (đôi khi bị ẩn do display: none ban đầu)
+            if (window.FB) {
+                window.FB.XFBML.parse();
+            }
+        }
+
+        function closeModal(event, force) {
+            if (force || event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Ẩn loading khi FB load xong (nếu bắt được sự kiện, hoặc đơn giản là set timeout)
+        window.onload = function() {
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
