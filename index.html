@@ -3,214 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Comments Modal Demo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Vivu Trà Vinh - Khám phá vùng đất Chùa Vàng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1877F2;
-            --primary-hover: #166fe5;
-            --bg-overlay: rgba(0, 0, 0, 0.4);
-            --modal-bg: #ffffff;
+            --primary: #00A651; /* Xanh lá du lịch/miền tây */
+            --primary-dark: #008f45;
             --text-main: #1c1e21;
+            --text-sec: #65676b;
+            --bg-light: #f7f8fa;
+            --white: #ffffff;
+            --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
             --radius: 12px;
-            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            overflow: hidden;
+            background-color: var(--bg-light);
+            color: var(--text-main);
         }
 
-        /* Trigger Button */
-        .btn-open {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgba(24, 119, 242, 0.2);
+        /* --- HEADER --- */
+        header {
+            background: var(--white);
+            padding: 16px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        .btn-open:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(24, 119, 242, 0.3);
+        
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        
+        .btn-post {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
         }
 
-        /* Modal Overlay */
+        /* --- HERO --- */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ao_Ba_Om.jpg/1200px-Ao_Ba_Om.jpg'); /* Ảnh Ao Bà Om demo */
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 20px;
+        }
+
+        .hero h1 { font-size: 32px; margin-bottom: 10px; }
+        .hero p { font-size: 16px; opacity: 0.9; max-width: 600px; }
+
+        /* --- CONTENT GRID --- */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* --- LOCATION CARD --- */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-img {
+            height: 180px;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-body {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-tag {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-sec);
+            line-height: 1.5;
+            margin-bottom: 16px;
+            flex: 1; /* Push footer down */
+        }
+
+        .card-footer {
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating { color: #f5a623; font-weight: 600; font-size: 14px; }
+        
+        .btn-comment {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-comment:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- MODAL (Tái sử dụng code cũ) --- */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-overlay);
-            backdrop-filter: blur(5px);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            opacity: 0; transition: opacity 0.3s;
         }
+        .modal-overlay.active { display: flex; opacity: 1; }
 
-        .modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        /* Modal Container */
         .modal-container {
-            background: var(--modal-bg);
-            width: 90%;
-            max-width: 600px;
-            max-height: 85vh;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            transform: scale(0.95) translateY(10px);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
+            background: white; width: 90%; max-width: 600px; height: 80vh;
+            border-radius: 12px; display: flex; flex-direction: column;
+            transform: translateY(20px); transition: transform 0.3s;
         }
+        .modal-overlay.active .modal-container { transform: translateY(0); }
 
-        .modal-overlay.active .modal-container {
-            transform: scale(1) translateY(0);
-        }
-
-        /* Header */
-        .modal-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid #e4e6eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0;
-        }
-
-        .btn-close {
-            background: transparent;
-            border: none;
-            font-size: 24px;
-            color: #65676b;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .btn-close:hover {
-            background-color: #f0f2f5;
-            color: var(--text-main);
-        }
-
-        /* Body */
-        .modal-body {
-            padding: 0;
-            overflow-y: auto;
-            flex: 1;
-            background: #f0f2f5; /* FB background color */
-        }
-
-        .fb-comments-wrapper {
-            background: #fff;
-            padding: 16px;
-            min-height: 200px;
-        }
-
-        /* Loading State */
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #65676b;
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .modal-footer {
-            padding: 12px 24px;
-            border-top: 1px solid #e4e6eb;
-            background: #fff;
-            text-align: right;
-            font-size: 12px;
-            color: #65676b;
-        }
+        .modal-header { padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { margin: 0; font-size: 18px; }
+        .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        
+        .modal-body { flex: 1; overflow-y: auto; background: #f0f2f5; padding: 0; }
+        .fb-comments-wrapper { background: white; min-height: 100%; padding: 10px; }
 
     </style>
 </head>
 <body>
 
-    <!-- FB SDK Root -->
+    <!-- FB SDK -->
     <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v18.0&appId=YOUR_APP_ID" nonce="random"></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v18.0&appId=YOUR_APP_ID" nonce="xyz"></script>
 
-    <!-- Main Trigger -->
-    <button class="btn-open" onclick="openModal()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-        </svg>
-        Mở Bình Luận
-    </button>
+    <header>
+        <a href="#" class="logo">🌴 Vivu Trà Vinh</a>
+        <div class="nav-links">
+            <a href="#">Ăn gì?</a>
+            <a href="#">Đi đâu?</a>
+            <a href="#" class="btn-post">Đăng bài</a>
+        </div>
+    </header>
 
-    <!-- Modal Structure -->
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 class="modal-title">Bình luận cộng đồng</h3>
-                <button class="btn-close" onclick="closeModal(null, true)">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="fb-comments-wrapper">
-                    <!-- FB Comments Plugin -->
-                    <!-- Lưu ý: data-href cần là URL thực tế khi deploy. Localhost có thể không hoạt động tốt. -->
-                    <div class="fb-comments" 
-                         data-href="https://developers.facebook.com/docs/plugins/comments#configurator" 
-                         data-width="100%" 
-                         data-numposts="5">
+    <div class="hero">
+        <div>
+            <h1>Khám phá Vùng đất Chùa Vàng</h1>
+            <p>Chia sẻ và tìm kiếm những địa điểm ăn uống, vui chơi thú vị nhất tại Trà Vinh.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">Địa điểm nổi bật hôm nay</h2>
+        
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://statics.vinpearl.com/ao-ba-om-tra-vinh-2_1631610427.jpg')"></div>
+                <div class="card-body">
+                    <div class="card-tag">Di tích</div>
+                    <h3 class="card-title">Ao Bà Om</h3>
+                    <p class="card-desc">Thắng cảnh nổi tiếng với hàng cây cổ thụ trăm tuổi và mặt hồ phẳng lặng.</p>
+                    <div class="card-footer">
+                        <span class="rating">⭐ 4.8 (120 đánh giá)</span>
+                        <button class="btn-comment" onclick="openComments('https://vivutravinh.com/ao-ba-om')">💬 Bình luận</button>
                     </div>
-                    <div class="loading" id="fbLoading">Đang tải plugin Facebook...</div>
                 </div>
             </div>
 
-            <div class="modal-footer">
-                Powered by Facebook Comments
+            <!-- Card 2 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://mia.vn/media/uploads/blog-du-lich/banh-canh-ben-co-1-1636537339.jpg')"></div>
+                <div class="card-body">
+                    <div class="card-tag">Ẩm thực</div>
+                    <h3 class="card-title">Bánh Canh Bến Có</h3>
+                    <p class="card-desc">Đặc sản Trà Vinh không thể bỏ qua, hương vị đậm đà khó quên.</p>
+                    <div class="card-footer">
+                        <span class="rating">⭐ 4.5 (85 đánh giá)</span>
+                        <button class="btn-comment" onclick="openComments('https://vivutravinh.com/banh-canh')">💬 Bình luận</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://thamhiemmekong.com/wp-content/uploads/2020/06/chua-hang-tra-vinh.jpg')"></div>
+                <div class="card-body">
+                    <div class="card-tag">Tâm linh</div>
+                    <h3 class="card-title">Chùa Hang (Kompong Chray)</h3>
+                    <p class="card-desc">Ngôi chùa Khmer cổ kính với kiến trúc độc đáo và không gian yên bình.</p>
+                    <div class="card-footer">
+                        <span class="rating">⭐ 4.7 (200 đánh giá)</span>
+                        <button class="btn-comment" onclick="openComments('https://vivutravinh.com/chua-hang')">💬 Bình luận</button>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Card 4 (Placeholder) -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://ik.imagekit.io/tvlk/blog/2022/11/dia-diem-check-in-tra-vinh-4.jpg')"></div>
+                <div class="card-body">
+                    <div class="card-tag">Check-in</div>
+                    <h3 class="card-title">Biển Ba Động</h3>
+                    <p class="card-desc">Bãi biển hoang sơ, thích hợp để hóng gió và thưởng thức hải sản.</p>
+                    <div class="card-footer">
+                        <span class="rating">⭐ 4.2 (50 đánh giá)</span>
+                        <button class="btn-comment" onclick="openComments('https://vivutravinh.com/bien-ba-dong')">💬 Bình luận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Bình luận từ cộng đồng</h3>
+                <button class="btn-close" onclick="closeModal(null, true)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="fb-comments-wrapper">
+                    <!-- FB Comments Plugin sẽ được render lại khi JS gọi -->
+                    <div id="fb-comment-box" class="fb-comments" 
+                         data-href="" 
+                         data-width="100%" 
+                         data-numposts="5">
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; color: #999;">Đang tải bình luận...</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const modal = document.getElementById('modalOverlay');
-        const loading = document.getElementById('fbLoading');
+        const fbBox = document.getElementById('fb-comment-box');
 
-        function openModal() {
+        // Hàm mở modal và load comment theo URL ảo của từng địa điểm
+        function openComments(fakeUrl) {
+            // 1. Set URL cho plugin (Trong thực tế cần URL thật, ở đây demo mình dùng link FB docs để nó hiện ra cho đẹp)
+            // Để test giao diện: Mình set cứng link docs Facebook để nó luôn hiện comment demo.
+            // Khi chạy thật: Bạn bỏ comment dòng dưới và xóa dòng test đi.
+            
+            // var realUrl = fakeUrl; 
+            var testUrl = "https://developers.facebook.com/docs/plugins/comments#configurator"; 
+            
+            fbBox.setAttribute('data-href', testUrl); 
+            
+            // 2. Hiện modal
             modal.classList.add('active');
-            // Hack để render lại FB plugin nếu cần (đôi khi bị ẩn do display: none ban đầu)
+
+            // 3. Render lại plugin FB (Bắt buộc vì mình vừa đổi data-href)
             if (window.FB) {
-                window.FB.XFBML.parse();
+                window.FB.XFBML.parse(document.getElementById('fb-comments-wrapper'));
             }
         }
 
@@ -219,13 +341,7 @@
                 modal.classList.remove('active');
             }
         }
-
-        // Ẩn loading khi FB load xong (nếu bắt được sự kiện, hoặc đơn giản là set timeout)
-        window.onload = function() {
-            setTimeout(() => {
-                loading.style.display = 'none';
-            }, 2000);
-        }
     </script>
+
 </body>
 </html>
