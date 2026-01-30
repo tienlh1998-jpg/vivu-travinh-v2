@@ -974,6 +974,25 @@
         // Get default opening time based on category
         function getDefaultOpeningTime(category) {
             const defaults = {
+                // KHU VỰC 1: Thiên Đường Ẩm Thực
+                'Món Ngon / Đặc Sản': '09:00',
+                'Ăn Vặt Vỉa Hè': '14:00',
+                'Nhậu & Lai Rai': '17:00',
+
+                // KHU VỰC 2: Cà Phê & Chill
+                'Cafe & Trà Sữa': '07:00',
+
+                // KHU VỰC 3: Khám Phá & Du Lịch
+                'Điểm Check-in / Sống Ảo': '07:00',
+                'Du Lịch Tâm Linh': '06:00',
+                'Mua Sắm & Quà Tặng': '08:00',
+
+                // KHU VỰC 4: Tiện Ích & Giải Trí
+                'Lưu Trú': '00:00',  // 24/7
+                'Giải Trí': '14:00',
+                'Dịch Vụ': '08:00',
+
+                // Fallback for old categories
                 'Quán cafe': '06:00',
                 'Cafe': '06:00',
                 'Quán ăn': '09:00',
@@ -990,6 +1009,25 @@
         // Get default closing time based on category
         function getDefaultClosingTime(category) {
             const defaults = {
+                // KHU VỰC 1: Thiên Đường Ẩm Thực
+                'Món Ngon / Đặc Sản': '22:00',
+                'Ăn Vặt Vỉa Hè': '22:00',
+                'Nhậu & Lai Rai': '23:00',
+
+                // KHU VỰC 2: Cà Phê & Chill
+                'Cafe & Trà Sữa': '22:00',
+
+                // KHU VỰC 3: Khám Phá & Du Lịch
+                'Điểm Check-in / Sống Ảo': '18:00',
+                'Du Lịch Tâm Linh': '18:00',
+                'Mua Sắm & Quà Tặng': '20:00',
+
+                // KHU VỰC 4: Tiện Ích & Giải Trí
+                'Lưu Trú': '23:59',  // 24/7
+                'Giải Trí': '23:00',
+                'Dịch Vụ': '20:00',  // General (ATM 24/7)
+
+                // Fallback for old categories
                 'Quán cafe': '22:00',
                 'Cafe': '22:00',
                 'Quán ăn': '22:00',
@@ -1857,45 +1895,45 @@
                 icon = '🌅';
                 greeting = 'Buổi sáng tươi mới';
                 suggestions = [
-                    { icon: '☕', text: 'Quán Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Quán cafe'] || 0 },
-                    { icon: '🥖', text: 'Điểm tâm', category: 'Quán ăn', color: 'bg-orange-500 hover:bg-orange-600', count: categoryCounts['Quán ăn'] || 0 },
-                    { icon: '🏛️', text: 'Tham quan', category: 'Điểm du lịch', color: 'bg-purple-500 hover:bg-purple-600', count: categoryCounts['Điểm du lịch'] || 0 }
+                    { icon: '☕', text: 'Cafe', category: 'Cafe & Trà Sữa', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Cafe & Trà Sữa'] || categoryCounts['Cafe'] || 0 },
+                    { icon: '🍜', text: 'Món ngon', category: 'Món Ngon / Đặc Sản', color: 'bg-orange-500 hover:bg-orange-600', count: categoryCounts['Món Ngon / Đặc Sản'] || categoryCounts['Quán ăn'] || 0 },
+                    { icon: '🛕', text: 'Tâm linh', category: 'Du Lịch Tâm Linh', color: 'bg-purple-500 hover:bg-purple-600', count: categoryCounts['Du Lịch Tâm Linh'] || categoryCounts['Điểm du lịch'] || 0 }
                 ];
             } else if (hour >= 10 && hour < 14) {
                 // Late Morning / Lunch (10-14h)
                 icon = '🌞';
                 greeting = 'Giờ nghỉ trưa';
                 suggestions = [
-                    { icon: '🍜', text: 'Quán ăn', category: 'Quán ăn', color: 'bg-red-500 hover:bg-red-600', count: categoryCounts['Quán ăn'] || 0 },
-                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-rose-500 hover:bg-rose-600', count: categoryCounts['Nhà hàng'] || 0 },
-                    { icon: '🏛️', text: 'Tham quan', category: 'Điểm du lịch', color: 'bg-purple-500 hover:bg-purple-600', count: categoryCounts['Điểm du lịch'] || 0 }
+                    { icon: '🍴', text: 'Món ngon', category: 'Món Ngon / Đặc Sản', color: 'bg-red-500 hover:bg-red-600', count: categoryCounts['Món Ngon / Đặc Sản'] || categoryCounts['Quán ăn'] || categoryCounts['Nhà hàng'] || 0 },
+                    { icon: '☕', text: 'Cafe', category: 'Cafe & Trà Sữa', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Cafe & Trà Sữa'] || categoryCounts['Cafe'] || 0 },
+                    { icon: '📸', text: 'Check-in', category: 'Điểm Check-in / Sống Ảo', color: 'bg-blue-500 hover:bg-blue-600', count: categoryCounts['Điểm Check-in / Sống Ảo'] || categoryCounts['Điểm du lịch'] || 0 }
                 ];
             } else if (hour >= 14 && hour < 18) {
                 // Afternoon (14-18h)
                 icon = '🌆';
                 greeting = 'Buổi chiều thư giãn';
                 suggestions = [
-                    { icon: '☕', text: 'Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 },
-                    { icon: '🏖️', text: 'Du lịch', category: 'Điểm du lịch', color: 'bg-blue-500 hover:bg-blue-600', count: categoryCounts['Điểm du lịch'] || 0 },
-                    { icon: '🛍️', text: 'Mua sắm', category: 'Mua sắm', color: 'bg-pink-500 hover:bg-pink-600', count: categoryCounts['Mua sắm'] || 0 }
+                    { icon: '🧋', text: 'Cafe/Trà sữa', category: 'Cafe & Trà Sữa', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Cafe & Trà Sữa'] || categoryCounts['Cafe'] || 0 },
+                    { icon: '🍢', text: 'Ăn vặt', category: 'Ăn Vặt Vỉa Hè', color: 'bg-orange-500 hover:bg-orange-600', count: categoryCounts['Ăn Vặt Vỉa Hè'] || categoryCounts['Ăn vặt'] || 0 },
+                    { icon: '🛍️', text: 'Mua sắm', category: 'Mua Sắm & Quà Tặng', color: 'bg-pink-500 hover:bg-pink-600', count: categoryCounts['Mua Sắm & Quà Tặng'] || categoryCounts['Mua sắm'] || 0 }
                 ];
             } else if (hour >= 18 && hour < 23) {
                 // Evening/Night (18-23h)
                 icon = '🌙';
                 greeting = 'Buổi tối vui vẻ';
                 suggestions = [
-                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-indigo-500 hover:bg-indigo-600', count: categoryCounts['Nhà hàng'] || 0 },
-                    { icon: '🎭', text: 'Giải trí', category: 'Giải trí', color: 'bg-violet-500 hover:bg-violet-600', count: categoryCounts['Giải trí'] || 0 },
-                    { icon: '☕', text: 'Cafe đêm', category: 'Quán cafe', color: 'bg-slate-600 hover:bg-slate-700', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 }
+                    { icon: '🍺', text: 'Nhậu', category: 'Nhậu & Lai Rai', color: 'bg-indigo-500 hover:bg-indigo-600', count: categoryCounts['Nhậu & Lai Rai'] || categoryCounts['Quán nhậu'] || 0 },
+                    { icon: '🍴', text: 'Món ngon', category: 'Món Ngon / Đặc Sản', color: 'bg-rose-500 hover:bg-rose-600', count: categoryCounts['Món Ngon / Đặc Sản'] || categoryCounts['Nhà hàng'] || 0 },
+                    { icon: '🎤', text: 'Giải trí', category: 'Giải Trí', color: 'bg-violet-500 hover:bg-violet-600', count: categoryCounts['Giải Trí'] || categoryCounts['Giải trí'] || 0 }
                 ];
             } else {
                 // Late Night / Very Early Morning (23-6h)
                 icon = '🌃';
                 greeting = 'Đêm muộn';
                 suggestions = [
-                    { icon: '🏨', text: 'Khách sạn', category: 'Khách sạn', color: 'bg-teal-500 hover:bg-teal-600', count: categoryCounts['Khách sạn'] || 0 },
-                    { icon: '🍜', text: 'Ăn đêm', category: 'Quán ăn', color: 'bg-orange-600 hover:bg-orange-700', count: categoryCounts['Quán ăn'] || 0 },
-                    { icon: '☕', text: 'Cafe 24h', category: 'Quán cafe', color: 'bg-slate-700 hover:bg-slate-800', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 }
+                    { icon: '🏨', text: 'Lưu trú', category: 'Lưu Trú', color: 'bg-teal-500 hover:bg-teal-600', count: categoryCounts['Lưu Trú'] || categoryCounts['Khách sạn'] || 0 },
+                    { icon: '🍜', text: 'Ăn đêm', category: 'Món Ngon / Đặc Sản', color: 'bg-orange-600 hover:bg-orange-700', count: categoryCounts['Món Ngon / Đặc Sản'] || categoryCounts['Quán ăn'] || 0 },
+                    { icon: '💆', text: 'Dịch vụ', category: 'Dịch Vụ', color: 'bg-slate-700 hover:bg-slate-800', count: categoryCounts['Dịch Vụ'] || 0 }
                 ];
             }
 
@@ -1921,8 +1959,27 @@
 
                 button.innerHTML = `<span class="text-xl">${suggestion.icon}</span> ${displayText}`;
 
-                // Category to Section ID mapping
+                // Category to Section ID mapping (NEW STRUCTURE)
                 const sectionMapping = {
+                    // KHU VỰC 1: Thiên Đường Ẩm Thực → section-food
+                    'Món Ngon / Đặc Sản': 'section-food',
+                    'Ăn Vặt Vỉa Hè': 'section-food',
+                    'Nhậu & Lai Rai': 'section-food',
+
+                    // KHU VỰC 2: Cà Phê & Chill → section-cafe
+                    'Cafe & Trà Sữa': 'section-cafe',
+
+                    // KHU VỰC 3: Khám Phá & Du Lịch → section-travel
+                    'Điểm Check-in / Sống Ảo': 'section-travel',
+                    'Du Lịch Tâm Linh': 'section-travel',
+                    'Mua Sắm & Quà Tặng': 'section-travel',
+
+                    // KHU VỰC 4: Tiện Ích & Giải Trí → section-service
+                    'Lưu Trú': 'section-service',
+                    'Giải Trí': 'section-service',
+                    'Dịch Vụ': 'section-service',
+
+                    // Fallback for old categories
                     'Quán cafe': 'section-cafe',
                     'Cafe': 'section-cafe',
                     'Quán ăn': 'section-food',
@@ -1932,9 +1989,9 @@
                     'Quán nhậu': 'section-food',
                     'Điểm du lịch': 'section-travel',
                     'Du lịch': 'section-travel',
-                    'Mua sắm': 'section-food', // Fallback to food for now
-                    'Giải trí': 'section-travel', // Fallback to travel for now
-                    'Khách sạn': 'section-travel' // Fallback to travel for now
+                    'Mua sắm': 'section-travel',
+                    'Giải trí': 'section-service',
+                    'Khách sạn': 'section-service'
                 };
 
                 // Click handler: Scroll to exact section

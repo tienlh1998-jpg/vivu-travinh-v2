@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    
+    <!-- Homepage -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="vi" href="https://tienlh1998-jpg.github.io/vivu-travinh-v2/"/>
+    </url>
+    
+    <!-- Food Section -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/#section-food</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- Cafe Section -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/#section-cafe</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- Travel Section -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/#section-travel</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- Service Section -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/#section-service</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Map View -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/#mapView</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- Static Resources -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/manifest.json</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    
+    <!-- Images -->
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/aobaom-8-1024x588.jpg</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+        <image:image>
+            <image:loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/aobaom-8-1024x588.jpg</image:loc>
+            <image:title>Ao Bà Om - Di tích thắng cảnh quốc gia Trà Vinh</image:title>
+            <image:caption>Hàng cây cổ thụ trăm tuổi tại Ao Bà Om</image:caption>
+        </image:image>
+    </url>
+    
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/Thoi-gian-dep-de-di-du-lich-bien-ba-dong.webp</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+        <image:image>
+            <image:loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/Thoi-gian-dep-de-di-du-lich-bien-ba-dong.webp</image:loc>
+            <image:title>Biển Ba Động - Vẻ đẹp nguyên sơ Trà Vinh</image:title>
+            <image:caption>Bãi biển Ba Động với tua bin gió độc đáo</image:caption>
+        </image:image>
+    </url>
+    
+    <url>
+        <loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/bun-nuoc-leo-tra-vinh-1-1739012793.jpeg</loc>
+        <lastmod>2026-01-29</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+        <image:image>
+            <image:loc>https://tienlh1998-jpg.github.io/vivu-travinh-v2/bun-nuoc-leo-tra-vinh-1-1739012793.jpeg</image:loc>
+            <image:title>Bún Nước Lèo - Đặc sản trứ danh Trà Vinh</image:title>
+            <image:caption>Món bún nước lèo đặc sản nổi tiếng của Trà Vinh</image:caption>
+        </image:image>
+    </url>
+
+</urlset>
