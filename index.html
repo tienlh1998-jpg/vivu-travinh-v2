@@ -974,6 +974,79 @@
             });
         });
 
+        // ========================================
+        // PHASE 1: OPENING HOURS HELPER FUNCTIONS
+        // ========================================
+
+        // Get default opening time based on category
+        function getDefaultOpeningTime(category) {
+            const defaults = {
+                'Quán cafe': '06:00',
+                'Cafe': '06:00',
+                'Quán ăn': '09:00',
+                'Nhà hàng': '10:00',
+                'Khách sạn': '00:00',
+                'Điểm du lịch': '07:00',
+                'Mua sắm': '08:00',
+                'Giải trí': '14:00',
+                'ATM': '00:00'
+            };
+            return defaults[category] || '09:00'; // Default 9 AM
+        }
+
+        // Get default closing time based on category
+        function getDefaultClosingTime(category) {
+            const defaults = {
+                'Quán cafe': '22:00',
+                'Cafe': '22:00',
+                'Quán ăn': '22:00',
+                'Nhà hàng': '23:00',
+                'Khách sạn': '23:59',
+                'Điểm du lịch': '18:00',
+                'Mua sắm': '20:00',
+                'Giải trí': '23:00',
+                'ATM': '23:59'
+            };
+            return defaults[category] || '22:00'; // Default 10 PM
+        }
+
+        // Parse time string to decimal hours (e.g., "14:30" → 14.5)
+        function parseTimeToDecimal(timeString) {
+            if (!timeString || timeString === '00:00:00') return null;
+
+            // Handle both "HH:MM" and "HH:MM:SS" formats
+            const parts = timeString.split(':');
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+
+            return hours + (minutes / 60);
+        }
+
+        // Check if location is currently open
+        function isLocationOpen(location, currentTime = new Date()) {
+            // Get current time in decimal hours (e.g., 14.5 = 14:30)
+            const currentHour = currentTime.getHours() + (currentTime.getMinutes() / 60);
+
+            // Handle special statuses
+            if (location.operatingStatus === '24/7') return true;
+            if (location.operatingStatus === 'Tạm Đóng' || location.operatingStatus === 'Closed') return false;
+
+            // Parse opening and closing times
+            const openTime = parseTimeToDecimal(location.openingTime);
+            const closeTime = parseTimeToDecimal(location.closingTime);
+
+            // If no valid times, assume open
+            if (openTime === null || closeTime === null) return true;
+
+            // Handle overnight operations (e.g., 22:00 - 02:00)
+            if (closeTime < openTime) {
+                return currentHour >= openTime || currentHour < closeTime;
+            }
+
+            // Normal hours
+            return currentHour >= openTime && currentHour < closeTime;
+        }
+
         // FETCH DATA
         let retryCount = 0;
         const MAX_RETRIES = 3;
@@ -1057,7 +1130,11 @@
                         images: processedImages,       // All images for gallery
                         description: row['Mô Tả'] || 'Chưa có mô tả.',
                         contributor: row['Người Đóng Góp'] || 'Ẩn danh',
-                        rating: parseInt(row['Đánh Giá']) || 5 // Default 5 stars
+                        rating: parseInt(row['Đánh Giá']) || 5, // Default 5 stars
+                        // Phase 1: Opening hours data
+                        openingTime: row['Giờ Mở Cửa'] || getDefaultOpeningTime(row['Phân loại']),
+                        closingTime: row['Giờ Đóng Cửa'] || getDefaultClosingTime(row['Phân loại']),
+                        operatingStatus: row['Trạng Thái Hoạt Động'] || 'Đang Mở'
                     };
                 });
 
@@ -1757,7 +1834,7 @@
         setTimeout(initLazyLoading, 1000);
 
         // ========================================
-        // SMART TIME-BASED SUGGESTIONS (AI-Powered)
+        // SMART TIME-BASED SUGGESTIONS (AI-Powered + Data-Driven)
         // ========================================
         function initSmartSuggestions() {
             const hour = new Date().getHours();
@@ -1765,57 +1842,74 @@
             const timeGreeting = document.getElementById('timeGreeting');
             const suggestionsContainer = document.getElementById('smartSuggestions');
 
+            // PHASE 1: Filter locations that are currently OPEN
+            const openLocations = allLocations.filter(loc => isLocationOpen(loc));
+
+            // Count by category
+            const categoryCounts = {};
+            openLocations.forEach(loc => {
+                const cat = loc.category;
+                categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+
+            console.log('📊 Currently open by category:', categoryCounts);
+
             let greeting = '';
             let icon = '';
             let suggestions = [];
 
-            // Determine time period and suggestions
+            // Determine time period and base suggestions on time + actual open locations
             if (hour >= 6 && hour < 10) {
                 // Morning (6-10h)
                 icon = '🌅';
                 greeting = 'Buổi sáng tươi mới';
                 suggestions = [
-                    { icon: '☕', text: 'Quán Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600' },
-                    { icon: '🥖', text: 'Điểm tâm', category: 'Quán ăn', color: 'bg-orange-500 hover:bg-orange-600' },
-                    { icon: '🏛️', text: 'Tham quan', category: 'Du lịch', color: 'bg-purple-500 hover:bg-purple-600' }
+                    { icon: '☕', text: 'Quán Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Quán cafe'] || 0 },
+                    { icon: '🥖', text: 'Điểm tâm', category: 'Quán ăn', color: 'bg-orange-500 hover:bg-orange-600', count: categoryCounts['Quán ăn'] || 0 },
+                    { icon: '🏛️', text: 'Tham quan', category: 'Điểm du lịch', color: 'bg-purple-500 hover:bg-purple-600', count: categoryCounts['Điểm du lịch'] || 0 }
                 ];
             } else if (hour >= 10 && hour < 14) {
                 // Late Morning / Lunch (10-14h)
                 icon = '🌞';
                 greeting = 'Giờ nghỉ trưa';
                 suggestions = [
-                    { icon: '🍜', text: 'Quán ăn', category: 'Quán ăn', color: 'bg-red-500 hover:bg-red-600' },
-                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-rose-500 hover:bg-rose-600' },
-                    { icon: '🏛️', text: 'Tham quan', category: 'Du lịch', color: 'bg-purple-500 hover:bg-purple-600' }
+                    { icon: '🍜', text: 'Quán ăn', category: 'Quán ăn', color: 'bg-red-500 hover:bg-red-600', count: categoryCounts['Quán ăn'] || 0 },
+                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-rose-500 hover:bg-rose-600', count: categoryCounts['Nhà hàng'] || 0 },
+                    { icon: '🏛️', text: 'Tham quan', category: 'Điểm du lịch', color: 'bg-purple-500 hover:bg-purple-600', count: categoryCounts['Điểm du lịch'] || 0 }
                 ];
             } else if (hour >= 14 && hour < 18) {
                 // Afternoon (14-18h)
                 icon = '🌆';
                 greeting = 'Buổi chiều thư giãn';
                 suggestions = [
-                    { icon: '☕', text: 'Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600' },
-                    { icon: '🏖️', text: 'Du lịch', category: 'Du lịch', color: 'bg-blue-500 hover:bg-blue-600' },
-                    { icon: '🛍️', text: 'Mua sắm', category: 'Mua sắm', color: 'bg-pink-500 hover:bg-pink-600' }
+                    { icon: '☕', text: 'Cafe', category: 'Quán cafe', color: 'bg-amber-500 hover:bg-amber-600', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 },
+                    { icon: '🏖️', text: 'Du lịch', category: 'Điểm du lịch', color: 'bg-blue-500 hover:bg-blue-600', count: categoryCounts['Điểm du lịch'] || 0 },
+                    { icon: '🛍️', text: 'Mua sắm', category: 'Mua sắm', color: 'bg-pink-500 hover:bg-pink-600', count: categoryCounts['Mua sắm'] || 0 }
                 ];
             } else if (hour >= 18 && hour < 23) {
                 // Evening/Night (18-23h)
                 icon = '🌙';
                 greeting = 'Buổi tối vui vẻ';
                 suggestions = [
-                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-indigo-500 hover:bg-indigo-600' },
-                    { icon: '🎭', text: 'Giải trí', category: 'Giải trí', color: 'bg-violet-500 hover:bg-violet-600' },
-                    { icon: '☕', text: 'Cafe đêm', category: 'Quán cafe', color: 'bg-slate-600 hover:bg-slate-700' }
+                    { icon: '🍴', text: 'Nhà hàng', category: 'Nhà hàng', color: 'bg-indigo-500 hover:bg-indigo-600', count: categoryCounts['Nhà hàng'] || 0 },
+                    { icon: '🎭', text: 'Giải trí', category: 'Giải trí', color: 'bg-violet-500 hover:bg-violet-600', count: categoryCounts['Giải trí'] || 0 },
+                    { icon: '☕', text: 'Cafe đêm', category: 'Quán cafe', color: 'bg-slate-600 hover:bg-slate-700', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 }
                 ];
             } else {
                 // Late Night / Very Early Morning (23-6h)
                 icon = '🌃';
                 greeting = 'Đêm muộn';
                 suggestions = [
-                    { icon: '🏨', text: 'Khách sạn', category: 'Khách sạn', color: 'bg-teal-500 hover:bg-teal-600' },
-                    { icon: '🍜', text: 'Ăn đêm', category: 'Quán ăn', color: 'bg-orange-600 hover:bg-orange-700' },
-                    { icon: '☕', text: 'Cafe 24h', category: 'Quán cafe', color: 'bg-slate-700 hover:bg-slate-800' }
+                    { icon: '🏨', text: 'Khách sạn', category: 'Khách sạn', color: 'bg-teal-500 hover:bg-teal-600', count: categoryCounts['Khách sạn'] || 0 },
+                    { icon: '🍜', text: 'Ăn đêm', category: 'Quán ăn', color: 'bg-orange-600 hover:bg-orange-700', count: categoryCounts['Quán ăn'] || 0 },
+                    { icon: '☕', text: 'Cafe 24h', category: 'Quán cafe', color: 'bg-slate-700 hover:bg-slate-800', count: categoryCounts['Quán cafe'] || categoryCounts['Cafe'] || 0 }
                 ];
             }
+
+            // Filter out suggestions with 0 count (no open locations)
+            // But keep at least 2 suggestions for better UX
+            const validSuggestions = suggestions.filter(s => s.count > 0);
+            const finalSuggestions = validSuggestions.length >= 2 ? validSuggestions : suggestions.slice(0, 2);
 
             // Update UI
             timeIcon.textContent = icon;
@@ -1823,11 +1917,17 @@
 
             // Create suggestion buttons
             suggestionsContainer.innerHTML = '';
-            suggestions.forEach((suggestion, index) => {
+            finalSuggestions.forEach((suggestion, index) => {
                 const button = document.createElement('button');
                 button.className = `px-4 py-2 ${suggestion.color} text-white rounded-lg transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2 text-sm font-medium opacity-0 animate-fade-in-up`;
                 button.style.animationDelay = `${index * 100}ms`;
-                button.innerHTML = `<span>${suggestion.icon}</span> ${suggestion.text}`;
+
+                // Show count if > 0, otherwise show generic text
+                const displayText = suggestion.count > 0
+                    ? `${suggestion.text} (${suggestion.count})`
+                    : suggestion.text;
+
+                button.innerHTML = `<span>${suggestion.icon}</span> ${displayText}`;
 
                 // Click handler to filter by category
                 button.onclick = () => {
@@ -1839,7 +1939,11 @@
 
                         // Scroll to results
                         document.getElementById('section-food').scrollIntoView({ behavior: 'smooth' });
-                        showToast(`🔍 Đang tìm ${suggestion.text}...`, 'info');
+
+                        const message = suggestion.count > 0
+                            ? `🔍 Tìm thấy ${suggestion.count} ${suggestion.text} đang mở`
+                            : `🔍 Đang tìm ${suggestion.text}...`;
+                        showToast(message, 'info');
                     }
                 };
 
@@ -1850,7 +1954,7 @@
         // Initialize on page load
         initSmartSuggestions();
 
-        console.log('✅ [ViVuTraVinh] All features loaded: PWA, Share, Lazy Loading, Smart Suggestions');
+        console.log('✅ [ViVuTraVinh] All features loaded: PWA, Share, Lazy Loading, Smart Suggestions (Phase 1: Opening Hours)');
     </script>
 </body>
 
