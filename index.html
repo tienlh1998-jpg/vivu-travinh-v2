@@ -1131,6 +1131,27 @@
             }
         }
 
+        // STUB FUNCTIONS (TODO: Implement full functionality)
+        function populateDropdowns() {
+            console.log('📋 [populateDropdowns] Stub - Not implemented yet');
+            console.log('   Categories:', [...new Set(allLocations.map(l => l.category))]);
+            console.log('   Areas:', [...new Set(allLocations.map(l => l.area))]);
+        }
+
+        function renderHomepage() {
+            console.log('🏠 [renderHomepage] Stub - Not implemented yet');
+            console.log('   Total locations:', allLocations.length);
+            console.log('   Sample:', allLocations.slice(0, 3).map(l => ({
+                name: l.name,
+                category: l.category
+            })));
+
+            // At minimum, show alert so user knows data loaded
+            if (allLocations.length > 0) {
+                console.log('✅ Data loaded successfully! Check console for details.');
+            }
+        }
+
         function processData(data) {
             try {
                 // Debug: Log first row to see actual column names
@@ -1221,9 +1242,11 @@
                 console.log('🎉 Đã xử lý:', allLocations.length, 'địa điểm được duyệt');
                 console.log('📊 Sample location:', allLocations[0]);
 
-                // TODO: Implement these functions
-                // populateDropdowns();
-                // renderHomepage();
+                // Populate dropdowns (stub)
+                populateDropdowns();
+
+                // Render homepage cards (stub)
+                renderHomepage();
 
                 // Initialize smart suggestions (working)
                 initSmartSuggestions();
