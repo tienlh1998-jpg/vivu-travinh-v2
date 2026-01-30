@@ -390,23 +390,16 @@
                         Khám phá những địa điểm ăn uống, vui chơi và văn hóa độc đáo nhất tại Trà Vinh cùng cộng đồng
                         địa phương.
                     </p>
-                    <!-- Main CTA Button -->
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-6">
-                        <button onclick="document.getElementById('section-food').scrollIntoView({behavior: 'smooth'})"
-                            class="px-8 py-4 bg-slate-900 dark:bg-brand-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-utensils"></i> Ăn gì hôm nay?
-                        </button>
-                    </div>
 
-                    <!-- Smart Time-Based Suggestions -->
-                    <div class="mt-4" data-aos="fade-up" data-aos-delay="200">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span id="timeIcon" class="text-2xl"></span>
+                    <!-- Smart Time-Based Suggestions (PRIMARY CTA) -->
+                    <div class="mt-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span id="timeIcon" class="text-3xl"></span>
                             <p id="timeGreeting"
-                                class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                class="text-base font-bold text-slate-800 dark:text-white uppercase tracking-wide">
                             </p>
                         </div>
-                        <div id="smartSuggestions" class="flex flex-wrap gap-2">
+                        <div id="smartSuggestions" class="flex flex-wrap gap-3">
                             <!-- Dynamic buttons will be injected here by JavaScript -->
                         </div>
                     </div>
@@ -1914,12 +1907,11 @@
             // Update UI
             timeIcon.textContent = icon;
             timeGreeting.textContent = greeting;
-
-            // Create suggestion buttons
             suggestionsContainer.innerHTML = '';
             finalSuggestions.forEach((suggestion, index) => {
                 const button = document.createElement('button');
-                button.className = `px-4 py-2 ${suggestion.color} text-white rounded-lg transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2 text-sm font-medium opacity-0 animate-fade-in-up`;
+                // Larger, more prominent buttons
+                button.className = `px-6 py-3 ${suggestion.color} text-white rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex items-center gap-2 text-base font-semibold opacity-0 animate-fade-in-up`;
                 button.style.animationDelay = `${index * 100}ms`;
 
                 // Show count if > 0, otherwise show generic text
@@ -1927,23 +1919,40 @@
                     ? `${suggestion.text} (${suggestion.count})`
                     : suggestion.text;
 
-                button.innerHTML = `<span>${suggestion.icon}</span> ${displayText}`;
+                button.innerHTML = `<span class="text-xl">${suggestion.icon}</span> ${displayText}`;
 
-                // Click handler to filter by category
+                // Category to Section ID mapping
+                const sectionMapping = {
+                    'Quán cafe': 'section-cafe',
+                    'Cafe': 'section-cafe',
+                    'Quán ăn': 'section-food',
+                    'Nhà hàng': 'section-food',
+                    'Điểm tâm': 'section-food',
+                    'Ăn vặt': 'section-food',
+                    'Quán nhậu': 'section-food',
+                    'Điểm du lịch': 'section-travel',
+                    'Du lịch': 'section-travel',
+                    'Mua sắm': 'section-food', // Fallback to food for now
+                    'Giải trí': 'section-travel', // Fallback to travel for now
+                    'Khách sạn': 'section-travel' // Fallback to travel for now
+                };
+
+                // Click handler: Scroll to exact section
                 button.onclick = () => {
-                    // Set category filter
-                    const categoryFilter = document.getElementById('categoryFilter');
-                    if (categoryFilter) {
-                        categoryFilter.value = suggestion.category;
-                        applyFilters();
+                    const sectionId = sectionMapping[suggestion.category] || 'section-food';
+                    const targetSection = document.getElementById(sectionId);
 
-                        // Scroll to results
-                        document.getElementById('section-food').scrollIntoView({ behavior: 'smooth' });
+                    if (targetSection) {
+                        // Scroll to section
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+                        // Toast message
                         const message = suggestion.count > 0
-                            ? `🔍 Tìm thấy ${suggestion.count} ${suggestion.text} đang mở`
-                            : `🔍 Đang tìm ${suggestion.text}...`;
-                        showToast(message, 'info');
+                            ? `🎯 Đang xem ${suggestion.count} ${suggestion.text} đang mở`
+                            : `🎯 Đang xem ${suggestion.text}`;
+                        showToast(message, 'success');
+                    } else {
+                        showToast('⚠️ Phần này đang được cập nhật', 'warning');
                     }
                 };
 
