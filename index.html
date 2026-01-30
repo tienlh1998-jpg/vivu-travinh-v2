@@ -1133,12 +1133,46 @@
 
         function processData(data) {
             try {
+                // Debug: Log first row to see actual column names
+                if (data && data.length > 0) {
+                    console.log('📋 Available columns:', Object.keys(data[0]));
+                    console.log('📄 First row sample:', data[0]);
+                }
+
+                // Helper: Find column by possible names (case-insensitive, trim)
+                function findColumn(row, possibleNames) {
+                    for (let name of possibleNames) {
+                        // Try exact match first
+                        if (row[name] !== undefined) return row[name];
+
+                        // Try case-insensitive match
+                        const key = Object.keys(row).find(k =>
+                            k.toLowerCase().trim() === name.toLowerCase().trim()
+                        );
+                        if (key) return row[key];
+                    }
+                    return '';
+                }
+
                 allLocations = data.filter(row => {
-                    const status = row['Trạng Thái'] ? row['Trạng Thái'].toString().trim().toLowerCase() : '';
-                    return status === 'duyệt';
+                    // Try multiple possible column names for status
+                    const status = findColumn(row, [
+                        'Trạng Thái',
+                        'Trang Thái',
+                        'Status',
+                        'Duyet'
+                    ]).toString().trim().toLowerCase();
+
+                    const isApproved = status === 'duyệt' || status === 'duyet' || status === 'approved';
+
+                    if (!isApproved) {
+                        console.log('⏭️ Skipped (not approved):', row['Tên địa điểm'] || 'Unknown', '- Status:', status);
+                    }
+
+                    return isApproved;
                 }).map((row, index) => {
                     // Handle potential column name variations
-                    const imgRaw = row['Link Hình Ảnh'] || row['Hình Ảnh'] || row['Link Ảnh'] || '';
+                    const imgRaw = findColumn(row, ['Link Hình Ảnh', 'Hình Ảnh', 'Link Ảnh', 'Image']);
 
                     // Parse multiple images (comma separated)
                     let imgList = imgRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
@@ -1148,35 +1182,58 @@
                         processedImages = ['https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh'];
                     }
 
-                    return {
-                        id: index,
-                        timestamp: row['Dấu thời gian'],
-                        name: row['Tên địa điểm'] || 'Chưa đặt tên',
-                        category: row['Phân loại'] || 'Khác',
-                        area: row['Khu vực'] || 'Chưa rõ',
-                        mapLink: row['Link Google Maps'] || '#',
-                        priceRaw: row['Mức Giá'] || '0',
-                        priceFormatted: formatPrice(row['Mức Giá']),
-                        imageLink: processedImages[0], // Main image for card
-                        images: processedImages,       // All images for gallery
-                        description: row['Mô Tả'] || 'Chưa có mô tả.',
-                        contributor: row['Người Đóng Góp'] || 'Ẩn danh',
-                        rating: parseInt(row['Đánh Giá']) || 5, // Default 5 stars
-                        // Phase 1: Opening hours data
-                        openingTime: row['Giờ Mở Cửa'] || getDefaultOpeningTime(row['Phân loại']),
-                        closingTime: row['Giờ Đóng Cửa'] || getDefaultClosingTime(row['Phân loại']),
-                        operatingStatus: row['Trạng Thái Hoạt Động'] || 'Đang Mở'
+                    // Price formatting
+                    const rawPrice = findColumn(row, ['Mức Giá', 'Giá', 'Price']);
+                    let priceFormatted = rawPrice.toString().trim() || 'Liên hệ';
+
+                    // Category with fallback
+                    const category = findColumn(row, ['Phân loại', 'Category', 'Loại']);
+
+                    // Opening/closing time with defaults based on category
+                    const openingTime = findColumn(row, ['Giờ Mở Cửa', 'Opening Time', 'Open'])
+                        || getDefaultOpeningTime(category);
+                    const closingTime = findColumn(row, ['Giờ Đóng Cửa', 'Closing Time', 'Close'])
+                        || getDefaultClosingTime(category);
+                    const operatingStatus = findColumn(row, ['Trạng Thái Hoạt Động', 'Operating Status'])
+                        || 'Normal';
+
+                    const location = {
+                        name: findColumn(row, ['Tên địa điểm', 'Name', 'Tên']) || 'Chưa có tên',
+                        category: category,
+                        area: findColumn(row, ['Khu vực', 'Area', 'Location']) || '',
+                        mapLink: findColumn(row, ['Link Google Maps', 'Map Link', 'Maps']) || '',
+                        priceFormatted: priceFormatted,
+                        imageLink: processedImages[0],
+                        imageGallery: processedImages,
+                        description: findColumn(row, ['Mô Tả', 'Mô tả', 'Description']) || '',
+                        contributor: findColumn(row, ['Người Đóng Góp', 'Contributor']) || 'Ẩn danh',
+                        rating: parseFloat(findColumn(row, ['Đánh Giá', 'Rating'])) || 0,
+                        openingTime: openingTime,
+                        closingTime: closingTime,
+                        operatingStatus: operatingStatus,
+                        id: `location-${index}`
                     };
+
+                    console.log('✅ Loaded:', location.name, '-', location.category);
+                    return location;
                 });
 
-                populateDropdowns();
-                renderHomepage();
-                loadingState.classList.add('hidden');
-                homeView.classList.remove('hidden');
+                console.log('🎉 Đã xử lý:', allLocations.length, 'địa điểm được duyệt');
+                console.log('📊 Sample location:', allLocations[0]);
 
-            } catch (e) {
-                console.error('Process Error:', e);
-                showError('Lỗi xử lý dữ liệu.');
+                // Populate dropdowns
+                populateDropdowns();
+
+                // Render homepage cards
+                renderHomepage();
+
+                // Initialize smart suggestions
+                initSmartSuggestions();
+            } catch (error) {
+                console.error('❌ Lỗi khi xử lý dữ liệu:', error);
+                console.error('Stack trace:', error.stack);
+                // Fallback to empty array
+                allLocations = [];
             }
         }
 
