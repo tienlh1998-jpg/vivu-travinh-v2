@@ -1241,11 +1241,26 @@
 
         // RENDER HOMEPAGE SECTIONS
         function renderHomepage() {
-            // Filter data for sections
-            const foodItems = allLocations.filter(i => ['Quán ăn', 'Quán nhậu', 'Ăn vặt'].includes(i.category));
-            const cafeItems = allLocations.filter(i => i.category === 'Cafe');
-            const travelItems = allLocations.filter(i => i.category === 'Điểm du lịch');
-            const serviceItems = allLocations.filter(i => i.category === 'Dịch vụ');
+            // Filter data for sections (Flexible matching for new Category structure)
+            const foodItems = allLocations.filter(i => {
+                const c = i.category;
+                return c.includes('Món Ngon') || c.includes('Ăn Vặt') || c.includes('Nhậu') || c.includes('Quán ăn') || c.includes('Nhà hàng');
+            });
+
+            const cafeItems = allLocations.filter(i => {
+                const c = i.category;
+                return c.includes('Cafe') || c.includes('Trà Sữa');
+            });
+
+            const travelItems = allLocations.filter(i => {
+                const c = i.category;
+                return c.includes('Check-in') || c.includes('Tâm Linh') || c.includes('Mua Sắm') || c.includes('Du lịch') || c.includes('Điểm du lịch');
+            });
+
+            const serviceItems = allLocations.filter(i => {
+                const c = i.category;
+                return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn');
+            });
 
             renderSection('grid-food', foodItems.slice(0, 4));
             renderSection('grid-cafe', cafeItems.slice(0, 4));
@@ -1382,16 +1397,28 @@
             let title = '';
 
             if (type === 'food') {
-                filtered = allLocations.filter(i => ['Quán ăn', 'Quán nhậu', 'Ăn vặt'].includes(i.category));
+                filtered = allLocations.filter(i => {
+                    const c = i.category;
+                    return c.includes('Món Ngon') || c.includes('Ăn Vặt') || c.includes('Nhậu') || c.includes('Quán ăn') || c.includes('Nhà hàng');
+                });
                 title = '😋 Ăn Uống No Say';
             } else if (type === 'cafe') {
-                filtered = allLocations.filter(i => i.category === 'Cafe');
+                filtered = allLocations.filter(i => {
+                    const c = i.category;
+                    return c.includes('Cafe') || c.includes('Trà Sữa');
+                });
                 title = '☕ Cà Phê & Tám Chuyện';
             } else if (type === 'travel') {
-                filtered = allLocations.filter(i => i.category === 'Điểm du lịch');
+                filtered = allLocations.filter(i => {
+                    const c = i.category;
+                    return c.includes('Check-in') || c.includes('Tâm Linh') || c.includes('Mua Sắm') || c.includes('Du lịch') || c.includes('Điểm du lịch');
+                });
                 title = '📸 Vi Vu Du Lịch';
             } else if (type === 'service') {
-                filtered = allLocations.filter(i => i.category === 'Dịch vụ');
+                filtered = allLocations.filter(i => {
+                    const c = i.category;
+                    return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn');
+                });
                 title = '🛠️ Dịch Vụ Tiện Ích';
             }
 
