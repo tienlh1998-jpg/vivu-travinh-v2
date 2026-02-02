@@ -1139,18 +1139,136 @@
         }
 
         function renderHomepage() {
-            console.log('🏠 [renderHomepage] Stub - Not implemented yet');
-            console.log('   Total locations:', allLocations.length);
-            console.log('   Sample:', allLocations.slice(0, 3).map(l => ({
-                name: l.name,
-                category: l.category
-            })));
+            console.log('🏠 [renderHomepage] Rendering all locations...');
 
-            // At minimum, show alert so user knows data loaded
-            if (allLocations.length > 0) {
-                console.log('✅ Data loaded successfully! Check console for details.');
+            if (!allLocations || allLocations.length === 0) {
+                console.warn('⚠️ No locations to render');
+                return;
+            }
+
+            // Group locations by section
+            const sections = {
+                food: [],
+                cafe: [],
+                travel: [],
+                service: []
+            };
+
+            // Map categories to sections based on sectionMapping
+            allLocations.forEach(location => {
+                const category = location.category;
+                let section = 'service'; // default
+
+                // Determine section from category
+                if (category.includes('Món Ngon') || category.includes('Ăn Vặt') || category.includes('Nhậu') || category.includes('Quán ăn') || category.includes('Nhà hàng')) {
+                    section = 'food';
+                } else if (category.includes('Cafe') || category.includes('Trà Sữa')) {
+                    section = 'cafe';
+                } else if (category.includes('Check-in') || category.includes('Tâm Linh') || category.includes('Mua Sắm') || category.includes('Du lịch') || category.includes('Điểm du lịch')) {
+                    section = 'travel';
+                } else {
+                    section = 'service';
+                }
+
+                sections[section].push(location);
+            });
+
+            // Render each section
+            Object.keys(sections).forEach(sectionKey => {
+                const gridId = `grid-${sectionKey}`;
+                const grid = document.getElementById(gridId);
+
+                if (!grid) {
+                    console.warn(`⚠️ Grid not found: ${gridId}`);
+                    return;
+                }
+
+                const locations = sections[sectionKey];
+
+                if (locations.length === 0) {
+                    grid.innerHTML = '<p class="text-slate-500 col-span-full text-center py-8">Chưa có địa điểm nào</p>';
+                    return;
+                }
+
+                // Generate cards HTML
+                grid.innerHTML = locations.map(location => createCardHTML(location)).join('');
+            });
+
+            // Show homeView, hide loading
+            const homeView = document.getElementById('homeView');
+            const heroSection = document.querySelector('.swiper-container')?.closest('section');
+
+            if (homeView) {
+                homeView.classList.remove('hidden');
+            }
+
+            console.log(`✅ Rendered ${allLocations.length} locations across ${Object.keys(sections).length} sections`);
+        }
+
+        // Helper function to create card HTML
+        function createCardHTML(location) {
+            const stars = '⭐'.repeat(Math.floor(location.rating || 5));
+
+            return `
+                <div class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="relative h-48 overflow-hidden bg-slate-200 dark:bg-slate-700">
+                        <img src="${location.imageLink}" 
+                             alt="${location.name}" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             onerror="this.src='https://placehold.co/600x400/f1f5f9/94a3b8?text=${encodeURIComponent(location.name)}'">
+                        <div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-brand-600 dark:text-brand-400">
+                            ${location.category}
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2 line-clamp-1">
+                            ${location.name}
+                        </h3>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            <i class="fa-solid fa-location-dot text-brand-500"></i>
+                            <span class="line-clamp-1">${location.area}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold text-green-600 dark:text-green-400">${location.priceFormatted}</span>
+                            <span class="text-xs">${stars}</span>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <a href="${location.mapLink}" target="_blank" 
+                               class="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors text-center">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> Chỉ đường
+                            </a>
+                            <button onclick="showLocationDetail('${location.id}')" 
+                                    class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold py-2 px-4 rounded-lg transition-colors">
+                                Chi tiết
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Stub function for location detail (TODO: Implement modal/detail view)
+        function showLocationDetail(locationId) {
+            const location = allLocations.find(l => l.id === locationId);
+            if (location) {
+                console.log('📍 [showLocationDetail]', location);
+                showToast(`Chi tiết: ${location.name}`, 'info');
+                // TODO: Show modal with full location details
             }
         }
+
+        // Stub function for "Xem tất cả" buttons (TODO: Implement filter/scroll)
+        function showFullList(section) {
+            console.log(`📋 [showFullList] Section: ${section}`);
+            const sectionEl = document.getElementById(`section-${section}`);
+            if (sectionEl) {
+                sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                showToast(`Xem tất cả ${section}`, 'info');
+            }
+        }
+
 
         function processData(data) {
             try {
@@ -1232,7 +1350,7 @@
                         openingTime: openingTime,
                         closingTime: closingTime,
                         operatingStatus: operatingStatus,
-                        id: `location-${index}`
+                        id: `location - ${index} `
                     };
 
                     console.log('✅ Loaded:', location.name, '-', location.category);
@@ -1307,7 +1425,7 @@
 
             card.innerHTML = `
                 <!-- Image Layer -->
-                <div class="absolute inset-0 w-full h-full overflow-hidden">
+                < div class="absolute inset-0 w-full h-full overflow-hidden" >
                     <img src="${item.imageLink}" alt="${item.name}" loading="lazy" referrerpolicy="no-referrer"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                          onerror="this.onerror=null; this.src='${placeholder}';"
@@ -1317,7 +1435,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
                 </div>
 
-                <!-- Top Badges -->
+                <!--Top Badges-- >
                 <div class="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
                     <span class="px-3 py-1 bg-white/20 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">
                         ${item.category}
@@ -1328,20 +1446,20 @@
                     </span>` : ''}
                 </div>
 
-                <!-- Favorite Button -->
+                <!--Favorite Button-- >
                 <button onclick="toggleFavorite(event, ${item.id})" 
                         class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110 group/btn">
                     <i class="${isFav ? 'fa-solid text-red-500' : 'fa-regular text-white group-hover/btn:text-red-500'} fa-heart text-lg drop-shadow-md"></i>
                 </button>
 
-                <!-- Content Layer (Bottom) -->
+                <!--Content Layer(Bottom)-- >
                 <div class="absolute bottom-0 left-0 w-full p-6 z-10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    
+
                     <!-- Title -->
                     <h3 class="text-xl font-bold text-white mb-2 leading-tight drop-shadow-md line-clamp-2 group-hover:text-brand-300 transition-colors">
                         ${item.name}
                     </h3>
-                    
+
                     <!-- Location & Rating -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-1.5 text-slate-300 text-xs font-medium">
@@ -1355,7 +1473,7 @@
 
                     <!-- Action Button (Hidden by default, slide up on hover) -->
                     <div class="h-0 group-hover:h-auto overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75">
-                         <button onclick="openModal(${item.id})" class="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-brand-500 hover:text-white transition-colors shadow-lg text-sm flex items-center justify-center gap-2">
+                        <button onclick="openModal(${item.id})" class="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-brand-500 hover:text-white transition-colors shadow-lg text-sm flex items-center justify-center gap-2">
                             Xem chi tiết <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
