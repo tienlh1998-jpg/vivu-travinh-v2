@@ -1207,7 +1207,7 @@
                         imageGallery: processedImages,
                         description: findColumn(row, ['Mô Tả', 'Mô tả', 'Description']) || '',
                         contributor: findColumn(row, ['Người Đóng Góp', 'Contributor']) || 'Ẩn danh',
-                        rating: parseFloat(findColumn(row, ['Đánh Giá', 'Rating'])) || 0,
+                        rating: parseFloat(findColumn(row, ['Đánh Giá', 'Rating', 'Sao', 'Star', 'Điểm', 'Review'])) || 0,
                         openingTime: openingTime,
                         closingTime: closingTime,
                         operatingStatus: operatingStatus,
@@ -1459,14 +1459,24 @@
         }
 
         function renderStars(count) {
-            let html = '';
+            const rating = parseFloat(count) || 0;
+            let html = '<div class="flex items-center">';
+
             for (let i = 1; i <= 5; i++) {
-                if (i <= count) {
-                    html += '<i class="fa-solid fa-star"></i>';
+                if (i <= rating) {
+                    html += '<i class="fa-solid fa-star text-yellow-400 text-[10px] drop-shadow-sm"></i>';
+                } else if (i - 0.5 <= rating) {
+                    html += '<i class="fa-regular fa-star-half-stroke text-yellow-400 text-[10px] drop-shadow-sm"></i>';
                 } else {
-                    html += '<i class="fa-regular fa-star text-white/50"></i>';
+                    html += '<i class="fa-regular fa-star text-slate-500 text-[10px]"></i>';
                 }
             }
+
+            if (rating > 0) {
+                html += `<span class="ml-1 text-[10px] font-bold text-slate-300 ml-1">${rating}</span>`;
+            }
+
+            html += '</div>';
             return html;
         }
 
