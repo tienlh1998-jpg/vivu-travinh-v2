@@ -1254,6 +1254,10 @@
 
             // Refresh animation layout
             setTimeout(() => AOS.refresh(), 100);
+
+            // Hide loading, show content
+            loadingState.classList.add('hidden');
+            homeView.classList.remove('hidden');
         }
 
         function renderSection(containerId, items) {
