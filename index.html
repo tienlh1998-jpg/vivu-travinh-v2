@@ -569,45 +569,55 @@
                         <div class="swiper-button-prev text-white hover:text-brand-500 transition-colors"></div>
                         <div class="swiper-pagination"></div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- SEARCH & FILTER BAR -->
-                    <div
-                        class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 max-w-4xl mx-auto flex flex-col md:flex-row gap-2 transition-colors">
-                        <div class="flex-grow relative group">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-                            </div>
-                            <input type="text" id="searchInput" placeholder="Tìm quán ăn, cafe, địa điểm..."
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-800 dark:text-white placeholder-slate-400 font-medium">
+            <!-- SEARCH & FILTER BAR (Moved Outside to prevent clipping) -->
+            <div class="col-span-1 lg:col-span-12 w-full -mt-8 relative z-30 px-1 md:px-0">
+                <div
+                    class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-w-4xl mx-auto flex flex-col md:flex-row gap-2 transition-colors">
+
+                    <!-- Search Input -->
+                    <div class="flex-grow relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Tìm quán ăn, cafe, địa điểm..."
+                            class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-800 dark:text-white placeholder-slate-400 font-medium">
+                    </div>
+
+                    <!-- Filters & Button -->
+                    <div class="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
+                        <!-- Category Filter -->
+                        <div class="relative flex-1 min-w-[140px] md:w-48 md:flex-none">
+                            <select id="categoryFilter"
+                                class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
+                                <option value="">Tất cả loại</option>
+                            </select>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
-                        <div class="flex gap-2 w-full md:w-auto">
-                            <div class="relative w-1/2 md:w-48">
-                                <select id="categoryFilter"
-                                    class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
-                                    <option value="">Tất cả loại</option>
-                                </select>
-                                <i
-                                    class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                            </div>
-
-                            <div class="relative w-1/2 md:w-48">
-                                <select id="areaFilter"
-                                    class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
-                                    <option value="">Tất cả khu vực</option>
-                                </select>
-                                <i
-                                    class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                            </div>
-
-                            <button onclick="toggleMapView()"
-                                class="bg-slate-900 text-white px-5 py-3.5 rounded-xl hover:bg-brand-600 transition-colors shadow-lg flex items-center gap-2 font-bold whitespace-nowrap">
-                                <i class="fa-solid fa-map-location-dot"></i> <span class="hidden md:inline">Bản
-                                    đồ</span>
-                            </button>
+                        <!-- Area Filter -->
+                        <div class="relative flex-1 min-w-[140px] md:w-48 md:flex-none">
+                            <select id="areaFilter"
+                                class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
+                                <option value="">Tất cả khu vực</option>
+                            </select>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
+
+                        <!-- Map Button -->
+                        <button onclick="toggleMapView()"
+                            class="flex-none bg-slate-900 text-white px-5 py-3.5 rounded-xl hover:bg-brand-600 transition-colors shadow-lg flex items-center justify-center gap-2 font-bold whitespace-nowrap w-full md:w-auto">
+                            <i class="fa-solid fa-map-location-dot"></i> <span>Bản đồ</span>
+                        </button>
                     </div>
                 </div>
+            </div>
+
+        </div>
     </section>
 
     <!-- MAP VIEW SECTION (Hidden by default) -->
