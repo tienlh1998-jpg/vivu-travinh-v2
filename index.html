@@ -1174,8 +1174,8 @@
                     // Handle potential column name variations
                     const imgRaw = findColumn(row, ['Link Hình Ảnh', 'Hình Ảnh', 'Link Ảnh', 'Image']);
 
-                    // Parse multiple images (comma separated)
-                    let imgList = imgRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    // Parse multiple images (comma or newline separated)
+                    let imgList = imgRaw.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
                     let processedImages = imgList.map(link => convertGoogleDriveLink(link));
 
                     if (processedImages.length === 0) {
