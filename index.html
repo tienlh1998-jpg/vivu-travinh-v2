@@ -778,7 +778,8 @@
                         <div class="relative bg-slate-200 flex flex-col h-64 md:h-auto">
                             <div class="flex-grow w-full relative overflow-hidden group">
                                 <img id="modalImage" src="" alt="Location" referrerpolicy="no-referrer"
-                                    class="w-full h-full object-cover transition-all duration-500"
+                                    class="w-full h-full object-cover transition-all duration-500 cursor-zoom-in hover:brightness-110"
+                                    onclick="openLightbox(this.src)"
                                     onerror="this.src='https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh'">
                             </div>
                             <!-- Gallery Thumbnails -->
@@ -845,6 +846,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX (Image Viewer) -->
+    <div id="lightbox" class="fixed inset-0 z-[110] hidden bg-black/95 backdrop-blur-xl transition-opacity duration-300"
+        onclick="closeLightbox()">
+        <button
+            class="absolute top-4 right-4 text-white text-4xl opacity-70 hover:opacity-100 hover:scale-110 transition-all z-50 w-12 h-12 flex items-center justify-center rounded-full bg-white/10"
+            onclick="closeLightbox()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <img id="lightboxImage" src="" alt="Full View"
+                class="max-w-full max-h-full object-contain shadow-2xl rounded-lg scale-90 opacity-0 transition-all duration-300 transform">
         </div>
     </div>
 
@@ -1631,6 +1646,33 @@
             } else {
                 closeMapView();
             }
+        }
+
+        // LIGHTBOX
+        window.openLightbox = function (src) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImage');
+            lightbox.classList.remove('hidden');
+            img.src = src;
+
+            // Animation
+            setTimeout(() => {
+                img.classList.remove('scale-90', 'opacity-0');
+                img.classList.add('scale-100', 'opacity-100');
+            }, 50);
+        }
+
+        window.closeLightbox = function () {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImage');
+
+            img.classList.remove('scale-100', 'opacity-100');
+            img.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                img.src = '';
+            }, 300);
         }
 
         window.closeMapView = function () {
