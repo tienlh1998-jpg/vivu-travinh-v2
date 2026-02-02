@@ -1493,8 +1493,15 @@
         function convertGoogleDriveLink(url) {
             if (!url) return 'https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh';
 
-            // Handle standard Drive URLs
-            const idRegex = /[-\w]{25,}/;
+            // Method 1: Look for explicit 'id=' parameter (Best for 'open?id=' links)
+            const idParamMatch = url.match(/[?&]id=([-\w]+)/);
+            if (idParamMatch && idParamMatch[1]) {
+                return `https://lh3.googleusercontent.com/d/${idParamMatch[1]}`;
+            }
+
+            // Method 2: Fallback to finding any long string that looks like an ID
+            // Relaxed length to 15+ to catch shorter IDs like '1O_PSVdTURz2mUIMXxroCY'
+            const idRegex = /[-\w]{15,}/;
             const match = url.match(idRegex);
 
             if (match && match[0]) {
