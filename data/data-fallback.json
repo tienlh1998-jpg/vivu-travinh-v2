@@ -1,0 +1,41 @@
+[
+  {
+    "Dấu thời gian": "28/01/2026 10:00:00",
+    "Tên địa điểm": "Ao Bà Om",
+    "Phân loại": "Điểm du lịch",
+    "Khu vực": "TP. Trà Vinh",
+    "Link Google Maps": "https://www.google.com/maps?q=9.9347,106.3449",
+    "Mức Giá": "Miễn phí",
+    "Link Hình Ảnh": "./ao bà om.jpg",
+    "Mô Tả": "Danh thắng nổi tiếng bậc nhất Trà Vinh với hàng cây cổ thụ trăm tuổi soi bóng xuống mặt hồ phẳng lặng.",
+    "Người Đóng Góp": "Admin",
+    "Trạng Thái": "Duyệt",
+    "Đánh Giá": "5"
+  },
+  {
+    "Dấu thời gian": "28/01/2026 10:10:00",
+    "Tên địa điểm": "Biển Ba Động",
+    "Phân loại": "Điểm du lịch",
+    "Khu vực": "Duyên Hải",
+    "Link Google Maps": "https://www.google.com/maps?q=9.6115,106.5775",
+    "Mức Giá": "Miễn phí",
+    "Link Hình Ảnh": "./biển ba động.jpg",
+    "Mô Tả": "Bãi biển hoang sơ với những đồi cát nhấp nhô độc đáo, phù hợp để check-in và ăn hải sản.",
+    "Người Đóng Góp": "Admin",
+    "Trạng Thái": "Duyệt",
+    "Đánh Giá": "4"
+  },
+  {
+    "Dấu thời gian": "28/01/2026 10:20:00",
+    "Tên địa điểm": "Chùa Âng",
+    "Phân loại": "Du Lịch Tâm Linh",
+    "Khu vực": "TP. Trà Vinh",
+    "Link Google Maps": "https://www.google.com/maps?q=9.9322,106.3364",
+    "Mức Giá": "Miễn phí",
+    "Link Hình Ảnh": "./chùa âng.jpg",
+    "Mô Tả": "Ngôi chùa Khmer cổ kính, nổi bật với kiến trúc truyền thống và không gian yên bình.",
+    "Người Đóng Góp": "Admin",
+    "Trạng Thái": "Duyệt",
+    "Đánh Giá": "5"
+  }
+]

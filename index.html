@@ -81,8 +81,20 @@
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
         rel="stylesheet">
 
-    <!-- PapaParse for CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        window.VIVUTRAVINH_CONFIG = {
+            apiKey: 'AIzaSyBLmhLn1joMDe7NFEXktRt0rhjw-3cu3vo'
+        };
+    </script>
+    <script type="module">
+        import { loadPlaces, clearPlacesCache } from './js/data.js';
+
+        window.ViVuData = {
+            loadPlaces,
+            clearPlacesCache
+        };
+        window.dispatchEvent(new CustomEvent('vivu:data-ready'));
+    </script>
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v=20260128"></script>
@@ -637,21 +649,29 @@
     <main class="flex-grow container mx-auto px-4 pb-20">
 
         <!-- Loading State -->
-        <div id="loadingState" class="flex flex-col items-center justify-center py-32">
-            <div class="loader mb-6 border-slate-200 border-b-brand-500"></div>
-            <p class="text-slate-500 font-medium animate-pulse">Đang tải dữ liệu trải nghiệm...</p>
+        <div id="loadingState" class="py-12">
+            <div class="flex flex-col items-center justify-center mb-10">
+                <div class="loader mb-6 border-slate-200 border-b-brand-500"></div>
+                <p class="text-slate-500 font-medium animate-pulse">Đang tải dữ liệu trải nghiệm...</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" aria-hidden="true">
+                <div class="h-[320px] rounded-3xl bg-slate-100 dark:bg-dark-800 animate-pulse"></div>
+                <div class="h-[320px] rounded-3xl bg-slate-100 dark:bg-dark-800 animate-pulse"></div>
+                <div class="h-[320px] rounded-3xl bg-slate-100 dark:bg-dark-800 animate-pulse"></div>
+                <div class="h-[320px] rounded-3xl bg-slate-100 dark:bg-dark-800 animate-pulse"></div>
+            </div>
         </div>
 
         <!-- Error State -->
         <div id="errorState"
-            class="hidden flex flex-col items-center justify-center py-20 text-center bg-red-50 rounded-3xl border border-red-100">
-            <div class="bg-red-100 p-5 rounded-full mb-4 text-red-500">
+            class="hidden flex flex-col items-center justify-center py-20 text-center bg-red-50 dark:bg-red-950/20 rounded-3xl border border-red-100 dark:border-red-900/40">
+            <div class="bg-red-100 dark:bg-red-900/40 p-5 rounded-full mb-4 text-red-500">
                 <i class="fa-solid fa-server text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Oops! Có lỗi xảy ra</h3>
-            <p class="text-slate-500 max-w-md mb-6" id="errorMessage">Không thể kết nối đến máy chủ dữ liệu.</p>
-            <button onclick="location.reload()"
-                class="bg-white border border-slate-200 hover:border-brand-500 text-slate-700 hover:text-brand-600 font-semibold py-2 px-6 rounded-lg transition-all shadow-sm">
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Không tải được dữ liệu</h3>
+            <p class="text-slate-500 dark:text-slate-300 max-w-md mb-6" id="errorMessage">Không thể kết nối đến máy chủ dữ liệu.</p>
+            <button onclick="retryLoadPlaces()"
+                class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700 hover:border-brand-500 text-slate-700 dark:text-slate-100 hover:text-brand-600 font-semibold py-2 px-6 rounded-lg transition-all shadow-sm">
                 Thử lại ngay
             </button>
         </div>
@@ -866,10 +886,7 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // CONFIG
-        // Google Sheet CSV URL - Published CSV format
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShzpU4sQYUzYJV1TNGbH5O3Ucnczdd1tspWVd3uhsoNO29t6ozYDCNn2J79dMQoYg3B7HktdqUNjTk/pub?output=csv';
-
-        // Bật/Tắt chế độ dùng dữ liệu mẫu (true = dùng SAMPLE_DATA, false = fetch từ Google Sheets)
+        // Bật/Tắt chế độ dùng dữ liệu mẫu nội bộ (true = dùng SAMPLE_DATA, false = dùng js/data.js)
         const USE_SAMPLE_DATA = false;
 
         // DỮ LIỆU MẪU (Dùng khi Google Sheets không khả dụng hoặc USE_SAMPLE_DATA = true)
@@ -1104,163 +1121,81 @@
         }
 
         // FETCH DATA
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
+        async function fetchData() {
+            try {
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                homeView.classList.add('hidden');
 
-        function fetchData() {
-            // Nếu bật chế độ dùng dữ liệu mẫu, skip fetching
-            if (USE_SAMPLE_DATA) {
-                console.log('📦 Sử dụng dữ liệu mẫu (SAMPLE_DATA)');
-                processData(SAMPLE_DATA);
-                return;
-            }
-
-            const timestamp = Date.now();
-            // Add proper query parameter separator
-            const finalUrl = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + timestamp;
-
-            console.log('🔄 Fetching data from Google Sheets:', finalUrl);
-
-            Papa.parse(finalUrl, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                transformHeader: function (header) {
-                    return header.trim();
-                },
-                complete: (results) => {
-                    if (results.data && results.data.length > 0) {
-                        console.log('✅ Tải dữ liệu thành công:', results.data.length, 'địa điểm');
-                        processData(results.data);
-                    } else {
-                        console.warn('⚠️ Dữ liệu trống từ Google Sheets');
-                        handleFetchError('Dữ liệu trống.');
-                    }
-                },
-                error: (err) => {
-                    console.error('❌ CSV Error:', err);
-                    handleFetchError(err);
+                if (USE_SAMPLE_DATA) {
+                    console.log('📦 Sử dụng dữ liệu mẫu (SAMPLE_DATA)');
+                    processData(SAMPLE_DATA);
+                    return;
                 }
-            });
-        }
 
-        function handleFetchError(err) {
-            if (retryCount < MAX_RETRIES) {
-                retryCount++;
-                console.log(`🔁 Retry ${retryCount}/${MAX_RETRIES}...`);
-                setTimeout(fetchData, 1500);
-            } else {
-                console.warn('⚠️ Không thể tải từ Google Sheets. Chuyển sang dùng dữ liệu mẫu.');
-                // Fallback to SAMPLE_DATA after all retries failed
-                processData(SAMPLE_DATA);
+                if (!window.ViVuData) {
+                    await new Promise(resolve => window.addEventListener('vivu:data-ready', resolve, { once: true }));
+                }
+
+                const places = await window.ViVuData.loadPlaces();
+                if (!Array.isArray(places) || places.length === 0) {
+                    throw new Error('Không có địa điểm được duyệt để hiển thị.');
+                }
+
+                console.log('✅ Tải dữ liệu thành công:', places.length, 'địa điểm');
+                processData(places);
+            } catch (error) {
+                console.error('❌ Không thể tải dữ liệu:', error);
+                showError('Không thể tải dữ liệu địa điểm. Vui lòng thử lại sau.');
             }
         }
+
+        window.retryLoadPlaces = function () {
+            if (window.ViVuData) {
+                window.ViVuData.clearPlacesCache();
+            }
+            fetchData();
+        };
 
         function processData(data) {
             try {
-                // Debug: Log first row to see actual column names
-                if (data && data.length > 0) {
-                    console.log('📋 Available columns:', Object.keys(data[0]));
-                    console.log('📄 First row sample:', data[0]);
+                if (!Array.isArray(data)) {
+                    throw new Error('Dữ liệu địa điểm không hợp lệ.');
                 }
 
-                // Helper: Find column by possible names (case-insensitive, trim)
-                function findColumn(row, possibleNames) {
-                    for (let name of possibleNames) {
-                        // Try exact match first
-                        if (row[name] !== undefined) return row[name];
-
-                        // Try case-insensitive match
-                        const key = Object.keys(row).find(k =>
-                            k.toLowerCase().trim() === name.toLowerCase().trim()
-                        );
-                        if (key) return row[key];
-                    }
-                    return '';
-                }
-
-                allLocations = data.filter(row => {
-                    // Try multiple possible column names for status
-                    const status = findColumn(row, [
-                        'Trạng Thái',
-                        'Trang Thái',
-                        'Status',
-                        'Duyet'
-                    ]).toString().trim().toLowerCase();
-
-                    const isApproved = status === 'duyệt' || status === 'duyet' || status === 'approved';
-
-                    if (!isApproved) {
-                        console.log('⏭️ Skipped (not approved):', row['Tên địa điểm'] || 'Unknown', '- Status:', status);
-                    }
-
-                    return isApproved;
-                }).map((row, index) => {
-                    // Handle potential column name variations
-                    const imgRaw = findColumn(row, ['Link Hình Ảnh', 'Hình Ảnh', 'Link Ảnh', 'Image']);
-
-                    // Parse multiple images (comma, newline, or space separated)
-                    let imgList = imgRaw.split(/[\s,]+/).map(s => s.trim()).filter(s => s.length > 0);
-                    let processedImages = imgList.map(link => convertGoogleDriveLink(link));
-
-                    if (processedImages.length === 0) {
-                        processedImages = ['https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh'];
-                    }
-
-                    // Price formatting
-                    const rawPrice = findColumn(row, ['Mức Giá', 'Giá', 'Price']);
-                    let priceFormatted = rawPrice.toString().trim() || 'Liên hệ';
-
-                    // Category with fallback
-                    const category = findColumn(row, ['Phân loại', 'Category', 'Loại']);
-
-                    // Opening/closing time with defaults based on category
-                    const openingTime = findColumn(row, ['Giờ Mở Cửa', 'Opening Time', 'Open'])
-                        || getDefaultOpeningTime(category);
-                    const closingTime = findColumn(row, ['Giờ Đóng Cửa', 'Closing Time', 'Close'])
-                        || getDefaultClosingTime(category);
-                    const operatingStatus = findColumn(row, ['Trạng Thái Hoạt Động', 'Operating Status'])
-                        || 'Normal';
-
-                    const location = {
-                        name: findColumn(row, ['Tên địa điểm', 'Name', 'Tên']) || 'Chưa có tên',
-                        category: category,
-                        area: findColumn(row, ['Khu vực', 'Area', 'Location']) || '',
-                        mapLink: findColumn(row, ['Link Google Maps', 'Map Link', 'Maps']) || '',
-                        priceFormatted: priceFormatted,
-                        imageLink: processedImages[0],
-                        imageGallery: processedImages,
-                        description: findColumn(row, ['Mô Tả', 'Mô tả', 'Description']) || '',
-                        contributor: findColumn(row, ['Người Đóng Góp', 'Contributor']) || 'Ẩn danh',
-                        rating: parseFloat(findColumn(row, ['Chấm Điểm?', 'Chấm Điểm', 'Đánh Giá', 'Rating', 'Sao', 'Star', 'Điểm', 'Review'])) || 0,
-                        openingTime: openingTime,
-                        closingTime: closingTime,
-                        operatingStatus: operatingStatus,
-                        id: `location - ${index} `
-                    };
-
-                    console.log('✅ Loaded:', location.name, '-', location.category);
-                    return location;
-                });
+                allLocations = data.map((location, index) => ({
+                    ...location,
+                    id: location.id || location.slug || `location-${index}`,
+                    name: location.name || 'Chưa có tên',
+                    category: location.category || '',
+                    area: location.area || '',
+                    mapLink: location.mapLink || '',
+                    priceRaw: location.priceRaw || location.priceFormatted || '',
+                    priceFormatted: location.priceFormatted || 'Liên hệ',
+                    imageLink: location.imageLink || 'https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh',
+                    imageGallery: location.imageGallery || location.images || [location.imageLink].filter(Boolean),
+                    images: location.images || location.imageGallery || [location.imageLink].filter(Boolean),
+                    description: location.description || '',
+                    contributor: location.contributor || 'Ẩn danh',
+                    rating: Number.parseFloat(location.rating) || 0,
+                    openingTime: location.openingTime || getDefaultOpeningTime(location.category),
+                    closingTime: location.closingTime || getDefaultClosingTime(location.category),
+                    operatingStatus: location.operatingStatus || 'Normal'
+                }));
 
                 console.log('🎉 Đã xử lý:', allLocations.length, 'địa điểm được duyệt');
                 console.log('📊 Sample location:', allLocations[0]);
 
-                // Populate dropdowns (stub)
                 populateDropdowns();
-
-                // Render homepage cards (stub)
                 renderHomepage();
-
-                // Initialize smart suggestions (working)
                 initSmartSuggestions();
 
                 console.log('✅ [processData] Completed successfully');
             } catch (error) {
                 console.error('❌ Lỗi khi xử lý dữ liệu:', error);
                 console.error('Stack trace:', error.stack);
-                // Fallback to empty array
                 allLocations = [];
+                showError('Dữ liệu địa điểm không hợp lệ. Vui lòng kiểm tra lại Google Sheet.');
             }
         }
 
@@ -1309,19 +1244,19 @@
                 return;
             }
 
-            items.forEach(item => {
-                container.appendChild(createCard(item));
+            items.forEach((item, index) => {
+                container.appendChild(createCard(item, index));
             });
         }
 
         // CREATE CARD HTML (NEW PREMIUM DESIGN)
-        function createCard(item) {
+        function createCard(item, index = 0) {
             const isFav = favorites.includes(item.id);
             const card = document.createElement('div');
             // Animation settings
             card.setAttribute('data-aos', 'fade-up');
             card.setAttribute('data-aos-duration', '800');
-            card.setAttribute('data-aos-delay', (item.id % 4) * 100);
+            card.setAttribute('data-aos-delay', (index % 4) * 100);
 
             // Card Style: Glassmorphism effect, clean borders, smooth hover
             card.className = 'group relative w-full h-[380px] rounded-3xl overflow-hidden shadow-card hover:shadow-2xl transition-all duration-500 cursor-pointer bg-white dark:bg-dark-800';
@@ -1722,7 +1657,7 @@
                     <img src="${item.imageLink}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
                     <h3 style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${item.name}</h3>
                     <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${item.category}</p>
-                    <button onclick="openModal(${item.id})" style="width: 100%; background: #0f172a; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer;">Xem chi tiết</button>
+                    <button onclick="openModal('${item.id}')" style="width: 100%; background: #0f172a; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer;">Xem chi tiết</button>
                 </div>
             `;
 
