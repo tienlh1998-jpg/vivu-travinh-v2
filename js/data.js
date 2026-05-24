@@ -62,7 +62,11 @@ function normalizeText(value) {
 }
 
 function normalizeKey(key) {
-    return normalizeText(key).toLowerCase().replace(/\s+/g, ' ');
+    return normalizeText(key)
+        .toLowerCase()
+        .replace(/[📍🗺️🏘️⭐✍️📸🎯💰⏰📞📝]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function findValue(row, names) {
@@ -136,10 +140,10 @@ function createSlug(text, fallback) {
 }
 
 function normalizePlace(row, index) {
-    const name = findValue(row, ['Tên địa điểm', 'Name', 'Tên']) || 'Chưa có tên';
-    const category = findValue(row, ['Phân loại', 'Category', 'Loại']);
-    const rawPrice = findValue(row, ['Mức Giá', 'Giá', 'Price']);
-    const images = parseImages(findValue(row, ['Link Hình Ảnh', 'Hình Ảnh', 'Link Ảnh', 'Image']));
+    const name = findValue(row, ['Tên địa điểm', 'Tên Địa Điểm / Cơ Sở', 'Name', 'Tên']);
+    const category = findValue(row, ['Phân loại', 'Loại Hình Địa Điểm', 'Category', 'Loại']);
+    const rawPrice = findValue(row, ['Mức Giá', 'Mức Giá Tham Khảo (Chi phí trung bình cho một người/lần ghé thăm)', 'Giá', 'Price']);
+    const images = parseImages(findValue(row, ['Link Hình Ảnh', 'Ảnh Đại Diện Chất Lượng Cao', 'Hình Ảnh', 'Link Ảnh', 'Image']));
     const rating = Number.parseFloat(findValue(row, ['Chấm Điểm?', 'Chấm Điểm', 'Đánh Giá', 'Rating', 'Sao', 'Star', 'Điểm', 'Review'])) || 0;
     const id = findValue(row, ['Slug', 'ID', 'Id']) || createSlug(name, `location-${index}`);
 
@@ -149,26 +153,35 @@ function normalizePlace(row, index) {
         slug: id,
         name,
         category,
-        area: findValue(row, ['Khu vực', 'Area', 'Location']),
+        area: findValue(row, ['Khu vực', 'Thuộc Huyện / Thị xã nào?', 'Địa chỉ Chi Tiết (Số nhà, đường, khóm/ấp)', 'Area', 'Location']),
+        address: findValue(row, ['Địa chỉ Chi Tiết (Số nhà, đường, khóm/ấp)', 'Địa chỉ', 'Address']),
         mapLink: findValue(row, ['Link Google Maps', 'Map Link', 'Maps']),
         priceRaw: rawPrice,
         priceFormatted: rawPrice || 'Liên hệ',
         imageLink: images[0],
         imageGallery: images,
         images,
-        description: findValue(row, ['Mô Tả', 'Mô tả', 'Description']),
+        description: findValue(row, ['Mô Tả', 'Mô tả', 'Mô tả Ngắn Hấp Dẫn về Địa Điểm (Ít nhất 50 từ)', 'Description']),
+        note: findValue(row, ['Ghi Chú Thêm (Tiện ích, lưu ý quan trọng, kinh nghiệm...)', 'Ghi chú', 'Note']),
+        contact: findValue(row, ['Số Điện Thoại / Fanpage / Website', 'Liên hệ', 'Contact']),
+        coordinates: findValue(row, ['Tọa Độ GPS (Latitude và Longitude)', 'Tọa độ', 'GPS']),
         contributor: findValue(row, ['Người Đóng Góp', 'Contributor']) || 'Ẩn danh',
         rating,
-        openingTime: findValue(row, ['Giờ Mở Cửa', 'Opening Time', 'Open']),
+        openingTime: findValue(row, ['Giờ Mở Cửa', 'Giờ Mở Cửa / Giờ Hoạt Động (Nếu có)', 'Opening Time', 'Open']),
         closingTime: findValue(row, ['Giờ Đóng Cửa', 'Closing Time', 'Close']),
         operatingStatus: findValue(row, ['Trạng Thái Hoạt Động', 'Operating Status']) || 'Normal',
         status: findValue(row, ['Trạng Thái', 'Trang Thái', 'Status', 'Duyet']),
     };
 }
 
+function hasDisplayableContent(row) {
+    return Boolean(findValue(row, ['Tên địa điểm', 'Tên Địa Điểm / Cơ Sở', 'Name', 'Tên']));
+}
+
 function normalizePlaces(rows) {
     return rows
         .filter(isApprovedPlace)
+        .filter(hasDisplayableContent)
         .map((row, index) => normalizePlace(row, index));
 }
 
@@ -232,6 +245,9 @@ export async function loadPlaces(configOverrides = {}) {
     try {
         const config = initConfig(configOverrides);
         const places = await loadPlacesFromGoogleSheets(config);
+        if (places.length === 0) {
+            throw new Error('Google Sheet không có địa điểm đã duyệt với đầy đủ tên để hiển thị.');
+        }
         writeCache(places);
         return places;
     } catch (apiError) {
