@@ -784,80 +784,111 @@
 
     <!-- DETAIL MODAL -->
     <div id="detailModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="flex min-h-full items-center justify-center p-3 sm:p-6 text-center">
                 <div
-                    class="relative transform overflow-hidden rounded-3xl bg-white dark:bg-slate-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl w-full border border-white/20 dark:border-slate-700">
+                    class="relative transform overflow-hidden rounded-[2rem] bg-white dark:bg-slate-900 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-5xl w-full border border-white/20 dark:border-slate-700">
                     <button onclick="closeModal()"
-                        class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-all">
+                        class="absolute top-4 right-4 z-30 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-md transition-all">
                         <i class="fa-solid fa-xmark text-xl w-8 h-8 flex items-center justify-center"></i>
                     </button>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2">
-                        <div class="relative bg-slate-200 flex flex-col h-64 md:h-auto">
+                    <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+                        <div class="relative bg-slate-200 dark:bg-slate-950 flex flex-col min-h-[320px] lg:min-h-[680px]">
+                            <div class="absolute top-4 left-4 z-20 flex flex-wrap gap-2 pr-16">
+                                <span id="modalCategory"
+                                    class="px-3 py-1 bg-brand-500/95 text-white text-[11px] font-bold rounded-full uppercase tracking-wider shadow-lg">Category</span>
+                                <span id="modalArea"
+                                    class="px-3 py-1 bg-white/90 text-slate-700 text-[11px] font-bold rounded-full uppercase tracking-wider shadow-lg">Area</span>
+                            </div>
                             <div class="flex-grow w-full relative overflow-hidden group">
                                 <img id="modalImage" src="" alt="Location" referrerpolicy="no-referrer"
-                                    class="w-full h-full object-cover transition-all duration-500 cursor-zoom-in hover:brightness-110"
+                                    class="w-full h-full object-cover transition-all duration-500 cursor-zoom-in hover:brightness-110 hover:scale-105"
                                     onclick="openLightbox(this.src)"
                                     onerror="this.src='https://placehold.co/600x400/f1f5f9/94a3b8?text=ViVuTraVinh'">
+                                <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"></div>
+                                <button onclick="openLightbox(document.getElementById('modalImage').src)"
+                                    class="absolute bottom-4 right-4 bg-white/15 hover:bg-white/25 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+                                    <i class="fa-solid fa-expand mr-2"></i>Xem ảnh
+                                </button>
                             </div>
-                            <!-- Gallery Thumbnails -->
                             <div id="modalGallery"
-                                class="flex gap-2 p-3 overflow-x-auto bg-white border-t border-slate-100 hidden scrollbar-hide">
-                                <!-- Thumbnails injected here -->
+                                class="flex gap-2 p-4 overflow-x-auto bg-white/95 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 hidden scrollbar-hide">
                             </div>
                         </div>
-                        <div class="p-8 flex flex-col h-full bg-white dark:bg-slate-800">
+
+                        <div class="p-6 sm:p-8 flex flex-col bg-white dark:bg-slate-900">
                             <div class="mb-auto">
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span id="modalCategory"
-                                        class="px-3 py-1 bg-brand-100 text-brand-700 text-xs font-bold rounded-full uppercase tracking-wider">Category</span>
-                                    <span id="modalArea"
-                                        class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full uppercase tracking-wider">Area</span>
-                                </div>
-                                <h2 id="modalTitle"
-                                    class="text-3xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">
-                                    Location Name</h2>
-                                <div class="flex items-center gap-2 mb-4 text-yellow-500 text-sm" id="modalStars"></div>
-
-                                <div class="flex items-center gap-4 mb-6 text-sm">
-                                    <div
-                                        class="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-1 rounded-lg">
-                                        <i class="fa-solid fa-money-bill-wave"></i> <span id="modalPrice">$$$</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                        <i class="fa-regular fa-clock"></i> <span id="modalTime">Time</span>
+                                <div class="flex items-start justify-between gap-4 mb-4 pr-10">
+                                    <div>
+                                        <h2 id="modalTitle"
+                                            class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight">Location Name</h2>
+                                        <div class="flex flex-wrap items-center gap-3 mt-3">
+                                            <div class="flex items-center gap-1 text-yellow-500 text-sm" id="modalStars"></div>
+                                            <span id="modalOpenStatus"
+                                                class="px-3 py-1 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 text-xs font-bold rounded-full">Đang cập nhật</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="prose prose-slate prose-sm mb-6">
-                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Mô tả
-                                        chi tiết</h3>
-                                    <p id="modalDescription" class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                                        Description...</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                                    <div id="modalPriceBlock" class="rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/40 p-4">
+                                        <div class="text-green-600 dark:text-green-300 text-xs font-bold uppercase mb-1"><i class="fa-solid fa-money-bill-wave mr-1"></i>Giá tham khảo</div>
+                                        <div id="modalPrice" class="text-slate-900 dark:text-white font-extrabold">Liên hệ</div>
+                                    </div>
+                                    <div id="modalHoursBlock" class="rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-4">
+                                        <div class="text-blue-600 dark:text-blue-300 text-xs font-bold uppercase mb-1"><i class="fa-regular fa-clock mr-1"></i>Giờ hoạt động</div>
+                                        <div id="modalHours" class="text-slate-900 dark:text-white font-extrabold">Đang cập nhật</div>
+                                    </div>
+                                    <div id="modalAddressBlock" class="sm:col-span-2 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 p-4">
+                                        <div class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase mb-1"><i class="fa-solid fa-location-dot mr-1 text-brand-500"></i>Địa chỉ</div>
+                                        <div id="modalAddress" class="text-slate-900 dark:text-white font-semibold leading-relaxed">Đang cập nhật</div>
+                                    </div>
+                                    <div id="modalContactBlock" class="rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 p-4">
+                                        <div class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase mb-1"><i class="fa-solid fa-phone mr-1 text-brand-500"></i>Liên hệ</div>
+                                        <a id="modalContact" href="#" target="_blank" class="text-slate-900 dark:text-white font-semibold break-words hover:text-brand-600">Đang cập nhật</a>
+                                    </div>
+                                    <div id="modalCoordinatesBlock" class="rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 p-4">
+                                        <div class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase mb-1"><i class="fa-solid fa-crosshairs mr-1 text-brand-500"></i>GPS</div>
+                                        <div id="modalCoordinates" class="text-slate-900 dark:text-white font-semibold break-words">Đang cập nhật</div>
+                                    </div>
                                 </div>
 
-                                <!-- Share Buttons -->
-                                <div class="mb-6">
-                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase mb-3">Chia sẻ
-                                        địa điểm</h3>
-                                    <div class="flex flex-wrap gap-2">
-                                        <button onclick="shareToFacebook()"
-                                            class="flex-1 min-w-[120px] py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-                                            <i class="fab fa-facebook-f"></i> Facebook
-                                        </button>
-                                        <button onclick="copyShareLink()"
-                                            class="flex-1 min-w-[120px] py-2 px-4 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-                                            <i class="fas fa-link"></i> Copy Link
-                                        </button>
+                                <div class="space-y-5">
+                                    <div id="modalDescriptionBlock" class="rounded-2xl border border-slate-100 dark:border-slate-700 p-5">
+                                        <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Mô tả chi tiết</h3>
+                                        <p id="modalDescription" class="text-slate-600 dark:text-slate-300 leading-relaxed">Description...</p>
+                                    </div>
+                                    <div id="modalNoteBlock" class="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20 p-5">
+                                        <h3 class="text-sm font-bold text-amber-700 dark:text-amber-300 uppercase mb-2"><i class="fa-solid fa-lightbulb mr-1"></i>Ghi chú / Kinh nghiệm</h3>
+                                        <p id="modalNote" class="text-slate-700 dark:text-slate-300 leading-relaxed">Note...</p>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase mb-3">Chia sẻ địa điểm</h3>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button onclick="shareToFacebook()"
+                                                class="flex-1 min-w-[120px] py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-bold">
+                                                <i class="fab fa-facebook-f"></i> Facebook
+                                            </button>
+                                            <button onclick="copyShareLink()"
+                                                class="flex-1 min-w-[120px] py-2.5 px-4 bg-slate-700 hover:bg-slate-800 text-white rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-bold">
+                                                <i class="fas fa-link"></i> Copy Link
+                                            </button>
+                                            <button onclick="nativeShare()"
+                                                class="flex-1 min-w-[120px] py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-bold">
+                                                <i class="fa-solid fa-share-nodes"></i> Chia sẻ
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+
+                            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700 flex gap-3">
                                 <button onclick="closeModal()"
-                                    class="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Đóng</button>
-                                <a id="modalMapLink" href="#" target="_blank"
+                                    class="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Đóng</button>
+                                <a id="modalMapLink" href="#" target="_blank" rel="noopener noreferrer"
                                     class="flex-[2] py-3 px-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-brand-600 shadow-lg transition-all flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-location-arrow"></i> Chỉ đường
                                 </a>
@@ -1506,27 +1537,72 @@
 
         // MODAL
         const detailModal = document.getElementById('detailModal');
+
+        function setBlockVisibility(blockId, visible) {
+            const block = document.getElementById(blockId);
+            if (!block) return;
+            block.classList.toggle('hidden', !visible);
+        }
+
+        function setTextOrHide(elementId, value, blockId = `${elementId}Block`) {
+            const element = document.getElementById(elementId);
+            const text = (value || '').toString().trim();
+            if (element) element.textContent = text;
+            setBlockVisibility(blockId, Boolean(text));
+            return Boolean(text);
+        }
+
+        function formatHours(item) {
+            if (item.operatingStatus === '24/7') return 'Mở cửa 24/7';
+            if (item.openingTime && item.closingTime) return `${item.openingTime} - ${item.closingTime}`;
+            return item.openingTime || item.closingTime || '';
+        }
+
+        function updateOpenStatus(item) {
+            const statusEl = document.getElementById('modalOpenStatus');
+            const isOpen = isLocationOpen(item);
+            const label = item.operatingStatus === '24/7' ? 'Mở cửa 24/7' : (isOpen ? 'Đang mở cửa' : 'Có thể đã đóng');
+            statusEl.textContent = label;
+            statusEl.className = isOpen
+                ? 'px-3 py-1 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 text-xs font-bold rounded-full'
+                : 'px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs font-bold rounded-full';
+        }
+
+        function setContact(value) {
+            const contact = (value || '').toString().trim();
+            const contactEl = document.getElementById('modalContact');
+            setBlockVisibility('modalContactBlock', Boolean(contact));
+            if (!contactEl || !contact) return;
+
+            contactEl.textContent = contact;
+            if (/^https?:\/\//i.test(contact)) {
+                contactEl.href = contact;
+            } else if (/^[+\d\s().-]{8,}$/i.test(contact)) {
+                contactEl.href = `tel:${contact.replace(/\s+/g, '')}`;
+            } else {
+                contactEl.removeAttribute('href');
+            }
+        }
+
         window.openModal = function (id) {
             const item = allLocations.find(i => i.id == id);
             if (!item) return;
 
-            // Main Image
             const mainImg = document.getElementById('modalImage');
             mainImg.src = item.imageLink;
 
-            // Gallery Logic
             const galleryContainer = document.getElementById('modalGallery');
+            const galleryImages = item.images || item.imageGallery || [];
             galleryContainer.innerHTML = '';
 
-            if (item.images && item.images.length > 1) {
+            if (galleryImages.length > 1) {
                 galleryContainer.classList.remove('hidden');
-                item.images.forEach((imgUrl, index) => {
+                galleryImages.forEach((imgUrl, index) => {
                     const thumb = document.createElement('img');
                     thumb.src = imgUrl;
-                    thumb.className = `w-16 h-16 object-cover rounded-lg cursor-pointer border-2 transition-all flex-shrink-0 ${index === 0 ? 'border-brand-500 ring-2 ring-brand-100' : 'border-transparent hover:border-brand-300'}`;
+                    thumb.className = `w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all flex-shrink-0 ${index === 0 ? 'border-brand-500 ring-2 ring-brand-100' : 'border-transparent hover:border-brand-300'}`;
                     thumb.onclick = () => {
                         mainImg.src = imgUrl;
-                        // Update active state
                         Array.from(galleryContainer.children).forEach(c => {
                             c.classList.remove('border-brand-500', 'ring-2', 'ring-brand-100');
                             c.classList.add('border-transparent');
@@ -1541,14 +1617,29 @@
             }
 
             document.getElementById('modalTitle').textContent = item.name;
-            document.getElementById('modalCategory').textContent = item.category;
-            document.getElementById('modalArea').textContent = item.area;
-            document.getElementById('modalPrice').textContent = item.priceFormatted;
-            document.getElementById('modalTime').textContent = item.timestamp;
-            document.getElementById('modalDescription').textContent = item.description;
-            document.getElementById('modalMapLink').href = item.mapLink;
+            document.getElementById('modalCategory').textContent = item.category || 'Địa điểm';
+            document.getElementById('modalArea').textContent = item.area || 'Trà Vinh';
+            document.getElementById('modalPrice').textContent = item.priceFormatted || 'Liên hệ';
+            document.getElementById('modalHours').textContent = formatHours(item) || 'Đang cập nhật';
+            document.getElementById('modalDescription').textContent = item.description || 'Đang cập nhật mô tả.';
 
-            // Render stars in modal (yellow text)
+            setTextOrHide('modalAddress', item.address || item.area);
+            setTextOrHide('modalCoordinates', item.coordinates);
+            setTextOrHide('modalNote', item.note);
+            setContact(item.contact);
+            updateOpenStatus(item);
+
+            const mapLink = document.getElementById('modalMapLink');
+            if (item.mapLink) {
+                mapLink.href = item.mapLink;
+                mapLink.classList.remove('pointer-events-none', 'opacity-50');
+                mapLink.setAttribute('aria-disabled', 'false');
+            } else {
+                mapLink.href = '#';
+                mapLink.classList.add('pointer-events-none', 'opacity-50');
+                mapLink.setAttribute('aria-disabled', 'true');
+            }
+
             let starsHtml = '';
             for (let i = 1; i <= 5; i++) {
                 starsHtml += i <= item.rating ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star text-slate-300"></i>';
