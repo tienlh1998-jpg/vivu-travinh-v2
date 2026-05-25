@@ -1209,8 +1209,8 @@
                     description: location.description || '',
                     contributor: location.contributor || 'Ẩn danh',
                     rating: Number.parseFloat(location.rating) || 0,
-                    openingTime: location.openingTime || getDefaultOpeningTime(location.category),
-                    closingTime: location.closingTime || getDefaultClosingTime(location.category),
+                    openingTime: location.openingTime || '',
+                    closingTime: location.closingTime || '',
                     operatingStatus: location.operatingStatus || 'Normal'
                 }));
 
@@ -1553,9 +1553,19 @@
         }
 
         function formatHours(item) {
-            if (item.operatingStatus === '24/7') return 'Mở cửa 24/7';
-            if (item.openingTime && item.closingTime) return `${item.openingTime} - ${item.closingTime}`;
-            return item.openingTime || item.closingTime || '';
+            const openingTime = (item.openingTime || '').toString().trim();
+            const closingTime = (item.closingTime || '').toString().trim();
+            const looksLikeTime = (value) => /^\d{1,2}:\d{2}(:\d{2})?$/.test(value);
+
+            if (item.operatingStatus === '24/7' || openingTime.toLowerCase().includes('24/7')) {
+                return openingTime || 'Mở cửa 24/7';
+            }
+
+            if (looksLikeTime(openingTime) && looksLikeTime(closingTime)) {
+                return `${openingTime} - ${closingTime}`;
+            }
+
+            return openingTime || closingTime || '';
         }
 
         function updateOpenStatus(item) {
