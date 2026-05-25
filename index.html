@@ -1251,7 +1251,7 @@
 
             const serviceItems = allLocations.filter(i => {
                 const c = i.category;
-                return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn');
+                return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn') || c.includes('Khác');
             });
 
             renderSection('grid-food', foodItems.slice(0, 4));
@@ -1409,7 +1409,7 @@
             } else if (type === 'service') {
                 filtered = allLocations.filter(i => {
                     const c = i.category;
-                    return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn');
+                    return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn') || c.includes('Khác');
                 });
                 title = '🛠️ Dịch Vụ Tiện Ích';
             }

@@ -4,7 +4,7 @@
 import { initConfig } from './config.js';
 
 const CACHE_KEY = 'vivutravinh-places';
-const CACHE_TTL = 30 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 800;
 const FALLBACK_URL = './data/data-fallback.json';
