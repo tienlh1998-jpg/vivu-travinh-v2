@@ -104,6 +104,7 @@ function isApprovedPlace(row) {
 function convertGoogleDriveLink(url) {
     const normalizedUrl = normalizeText(url);
     if (!normalizedUrl.includes('drive.google.com')) return normalizedUrl;
+    if (normalizedUrl.includes('/drive/folders/') || normalizedUrl.includes('/folders/')) return '';
 
     const idParamMatch = normalizedUrl.match(/[?&]id=([^&]+)/);
     if (idParamMatch) {
@@ -113,6 +114,11 @@ function convertGoogleDriveLink(url) {
     const filePathMatch = normalizedUrl.match(/\/file\/d\/([^/]+)/);
     if (filePathMatch) {
         return `https://lh3.googleusercontent.com/d/${filePathMatch[1]}`;
+    }
+
+    const ucMatch = normalizedUrl.match(/[?&]export=download.*[?&]id=([^&]+)/);
+    if (ucMatch) {
+        return `https://lh3.googleusercontent.com/d/${ucMatch[1]}`;
     }
 
     return normalizedUrl;
