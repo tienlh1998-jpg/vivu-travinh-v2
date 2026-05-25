@@ -1211,6 +1211,7 @@
                     rating: Number.parseFloat(location.rating) || 0,
                     openingTime: location.openingTime || '',
                     closingTime: location.closingTime || '',
+                    displayHours: location.displayHours || '',
                     operatingStatus: location.operatingStatus || 'Normal'
                 }));
 
@@ -1553,6 +1554,8 @@
         }
 
         function formatHours(item) {
+            if (item.displayHours) return item.displayHours;
+
             const openingTime = (item.openingTime || '').toString().trim();
             const closingTime = (item.closingTime || '').toString().trim();
             const looksLikeTime = (value) => /^\d{1,2}:\d{2}(:\d{2})?$/.test(value);

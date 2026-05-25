@@ -139,10 +139,32 @@ function createSlug(text, fallback) {
     return slug || fallback;
 }
 
+function parseOperatingHours(rawHours) {
+    const hours = normalizeText(rawHours);
+    if (!hours) return { openingTime: '', closingTime: '', displayHours: '' };
+
+    if (hours.toLowerCase().includes('24/7')) {
+        return { openingTime: hours, closingTime: '', displayHours: hours };
+    }
+
+    const rangeMatch = hours.match(/(\d{1,2}:\d{2})(?::\d{2})?\s*[-–—]\s*(\d{1,2}:\d{2})(?::\d{2})?/);
+    if (rangeMatch) {
+        return {
+            openingTime: rangeMatch[1],
+            closingTime: rangeMatch[2],
+            displayHours: `${rangeMatch[1]} - ${rangeMatch[2]}`,
+        };
+    }
+
+    return { openingTime: hours, closingTime: '', displayHours: hours };
+}
+
 function normalizePlace(row, index) {
     const name = findValue(row, ['Tên địa điểm', 'Tên Địa Điểm / Cơ Sở', 'Name', 'Tên']);
     const category = findValue(row, ['Phân loại', 'Loại Hình Địa Điểm', 'Category', 'Loại']);
     const rawPrice = findValue(row, ['Mức Giá', 'Mức Giá Tham Khảo (Chi phí trung bình cho một người/lần ghé thăm)', 'Giá', 'Price']);
+    const rawHours = findValue(row, ['Giờ Mở Cửa', 'Giờ Mở Cửa / Giờ Hoạt Động (Nếu có)', 'Opening Time', 'Open']);
+    const hours = parseOperatingHours(rawHours);
     const images = parseImages(findValue(row, ['Link Hình Ảnh', 'Ảnh Đại Diện Chất Lượng Cao', 'Hình Ảnh', 'Link Ảnh', 'Image']));
     const rating = Number.parseFloat(findValue(row, ['Chấm Điểm?', 'Chấm Điểm', 'Đánh Giá', 'Rating', 'Sao', 'Star', 'Điểm', 'Review'])) || 0;
     const id = findValue(row, ['Slug', 'ID', 'Id']) || createSlug(name, `location-${index}`);
@@ -167,8 +189,9 @@ function normalizePlace(row, index) {
         coordinates: findValue(row, ['Tọa Độ GPS (Latitude và Longitude)', 'Tọa độ', 'GPS']),
         contributor: findValue(row, ['Người Đóng Góp', 'Contributor']) || 'Ẩn danh',
         rating,
-        openingTime: findValue(row, ['Giờ Mở Cửa', 'Giờ Mở Cửa / Giờ Hoạt Động (Nếu có)', 'Opening Time', 'Open']),
-        closingTime: findValue(row, ['Giờ Đóng Cửa', 'Closing Time', 'Close']),
+        openingTime: hours.openingTime,
+        closingTime: findValue(row, ['Giờ Đóng Cửa', 'Closing Time', 'Close']) || hours.closingTime,
+        displayHours: hours.displayHours,
         operatingStatus: findValue(row, ['Trạng Thái Hoạt Động', 'Operating Status']) || 'Normal',
         status: findValue(row, ['Trạng Thái', 'Trang Thái', 'Status', 'Duyet']),
     };
