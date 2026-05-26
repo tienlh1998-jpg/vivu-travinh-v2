@@ -678,6 +678,44 @@
 
         <!-- HOME VIEW (SECTIONS) -->
         <div id="homeView" class="hidden space-y-16">
+            <!-- Featured Places -->
+            <section id="section-featured">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-3 mb-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <span class="bg-red-100 text-red-600 p-2 rounded-lg text-xl"><i
+                                    class="fa-solid fa-fire"></i></span>
+                            🔥 Địa Điểm Nổi Bật
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Những địa điểm được đánh giá cao và đáng ghé nhất.</p>
+                    </div>
+                    <button onclick="showFullList('featured')"
+                        class="text-brand-600 font-bold hover:text-brand-700 flex items-center gap-1 transition-colors">
+                        Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-featured"></div>
+            </section>
+
+            <!-- Latest Places -->
+            <section id="section-latest">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-3 mb-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <span class="bg-emerald-100 text-emerald-600 p-2 rounded-lg text-xl"><i
+                                    class="fa-solid fa-sparkles"></i></span>
+                            🆕 Mới Cập Nhật
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Các địa điểm mới được cộng đồng đóng góp gần đây.</p>
+                    </div>
+                    <button onclick="showFullList('latest')"
+                        class="text-brand-600 font-bold hover:text-brand-700 flex items-center gap-1 transition-colors">
+                        Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-latest"></div>
+            </section>
+
             <!-- Section 1: Ăn Uống -->
             <section id="section-food">
                 <div class="flex justify-between items-center mb-6">
@@ -1231,8 +1269,26 @@
             }
         }
 
+        function getFeaturedItems() {
+            const ratedItems = allLocations
+                .filter(item => Number(item.rating) >= 4)
+                .sort((a, b) => Number(b.rating) - Number(a.rating));
+
+            if (ratedItems.length >= 4) return ratedItems;
+
+            const fallbackItems = allLocations.filter(item => item.imageLink && item.description);
+            return [...new Map([...ratedItems, ...fallbackItems].map(item => [item.id, item])).values()];
+        }
+
+        function getLatestItems() {
+            return allLocations.slice().reverse();
+        }
+
         // RENDER HOMEPAGE SECTIONS
         function renderHomepage() {
+            const featuredItems = getFeaturedItems();
+            const latestItems = getLatestItems();
+
             // Filter data for sections (Flexible matching for new Category structure)
             const foodItems = allLocations.filter(i => {
                 const c = i.category;
@@ -1254,6 +1310,8 @@
                 return c.includes('Lưu Trú') || c.includes('Giải Trí') || c.includes('Dịch Vụ') || c.includes('Khách sạn') || c.includes('Khác');
             });
 
+            renderSection('grid-featured', featuredItems.slice(0, 4));
+            renderSection('grid-latest', latestItems.slice(0, 4));
             renderSection('grid-food', foodItems.slice(0, 4));
             renderSection('grid-cafe', cafeItems.slice(0, 4));
             renderSection('grid-travel', travelItems.slice(0, 4));
@@ -1388,7 +1446,13 @@
             let filtered = [];
             let title = '';
 
-            if (type === 'food') {
+            if (type === 'featured') {
+                filtered = getFeaturedItems();
+                title = '🔥 Địa Điểm Nổi Bật';
+            } else if (type === 'latest') {
+                filtered = getLatestItems();
+                title = '🆕 Mới Cập Nhật';
+            } else if (type === 'food') {
                 filtered = allLocations.filter(i => {
                     const c = i.category;
                     return c.includes('Món Ngon') || c.includes('Ăn Vặt') || c.includes('Nhậu') || c.includes('Quán ăn') || c.includes('Nhà hàng');
