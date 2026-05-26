@@ -5,6 +5,8 @@ export const SHEET_ID = '1xywS77u_udvGzsZyeV2tiKBReaWAXkdu4EQP41Q3yCI';
 export const API_KEY = '';
 export const SHEET_NAME = 'Bang1';
 export const RANGE = 'A:Z';
+export const SUPABASE_URL = 'https://foyraoimhksfvlxndwxr.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZveXJhb2ltaGtzZnZseG5kd3hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MjkwNzAsImV4cCI6MjA5NTMwNTA3MH0.ARJ173UkVNCichCiJmVrbp2aTByVoXnSEAIsIvbnYJ8';
 
 export function initConfig(overrides = {}) {
     const runtimeConfig = window.VIVUTRAVINH_CONFIG || {};
@@ -14,6 +16,8 @@ export function initConfig(overrides = {}) {
         apiKey: overrides.apiKey || runtimeConfig.apiKey || API_KEY,
         sheetName: overrides.sheetName || runtimeConfig.sheetName || SHEET_NAME,
         range: overrides.range || runtimeConfig.range || RANGE,
+        supabaseUrl: overrides.supabaseUrl || runtimeConfig.supabaseUrl || SUPABASE_URL,
+        supabaseAnonKey: overrides.supabaseAnonKey || runtimeConfig.supabaseAnonKey || SUPABASE_ANON_KEY,
     };
 
     if (!config.sheetId) {
