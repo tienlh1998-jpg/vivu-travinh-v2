@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản trị bình luận - ViVuTraVinh</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold">Quản trị bình luận</h1>
+        <p class="text-slate-500 mt-1">Ẩn, hiện lại hoặc xóa bình luận trên ViVuTraVinh.</p>
+      </div>
+      <a href="./" class="text-orange-600 font-bold hover:text-orange-700">Về trang chủ</a>
+    </div>
+
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+      <label for="adminSecret" class="block text-sm font-bold mb-2">Admin secret</label>
+      <div class="flex flex-col md:flex-row gap-3">
+        <input id="adminSecret" type="password" placeholder="Nhập ADMIN_SECRET đã cấu hình trên Vercel"
+          class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        <button onclick="saveSecret()" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-orange-600">Lưu secret</button>
+        <button onclick="loadAdminComments()" class="px-5 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700">Tải bình luận</button>
+      </div>
+      <p id="adminMessage" class="text-sm text-slate-500 mt-3"></p>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-5 border-b border-slate-100">
+        <div>
+          <h2 class="text-xl font-extrabold">Danh sách bình luận</h2>
+          <p id="commentCount" class="text-sm text-slate-500 mt-1">Chưa tải dữ liệu.</p>
+        </div>
+        <select id="hiddenFilter" onchange="loadAdminComments()" class="px-4 py-2 rounded-xl border border-slate-200">
+          <option value="all">Tất cả</option>
+          <option value="false">Đang hiện</option>
+          <option value="true">Đã ẩn</option>
+        </select>
+      </div>
+      <div id="commentsContainer" class="divide-y divide-slate-100"></div>
+    </section>
+  </main>
+
+  <script>
+    const SECRET_KEY = 'vivutravinh-admin-secret';
+
+    document.getElementById('adminSecret').value = sessionStorage.getItem(SECRET_KEY) || '';
+
+    function setMessage(message, type = 'info') {
+      const element = document.getElementById('adminMessage');
+      element.textContent = message;
+      element.className = `text-sm mt-3 ${type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : 'text-slate-500'}`;
+    }
+
+    function getSecret() {
+      return document.getElementById('adminSecret').value.trim();
+    }
+
+    function saveSecret() {
+      const secret = getSecret();
+      if (!secret) {
+        setMessage('Vui lòng nhập admin secret.', 'error');
+        return;
+      }
+      sessionStorage.setItem(SECRET_KEY, secret);
+      setMessage('Đã lưu secret trong phiên trình duyệt.', 'success');
+    }
+
+    async function adminRequest(path, options = {}) {
+      const secret = getSecret() || sessionStorage.getItem(SECRET_KEY);
+      if (!secret) throw new Error('Thiếu admin secret.');
+
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': secret,
+          ...(options.headers || {})
+        }
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || `Request failed: ${response.status}`);
+      return payload;
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(value) {
+      try {
+        return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+      } catch {
+        return '';
+      }
+    }
+
+    function renderComments(comments) {
+      document.getElementById('commentCount').textContent = `${comments.length} bình luận`;
+      const container = document.getElementById('commentsContainer');
+
+      if (!comments.length) {
+        container.innerHTML = '<div class="p-6 text-slate-500 italic">Không có bình luận nào.</div>';
+        return;
+      }
+
+      container.innerHTML = comments.map(comment => `
+        <article class="p-5 ${comment.is_hidden ? 'bg-slate-50 opacity-75' : 'bg-white'}">
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="font-extrabold">${escapeHtml(comment.author_name)}</span>
+                <span class="text-yellow-500 text-sm">${'★'.repeat(Number(comment.rating || 0))}${'☆'.repeat(5 - Number(comment.rating || 0))}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${comment.is_hidden ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${comment.is_hidden ? 'Đã ẩn' : 'Đang hiện'}</span>
+              </div>
+              <div class="text-sm text-slate-500 mb-2">
+                #${comment.id} · ${escapeHtml(comment.place_name || comment.place_id)} · ${formatDate(comment.created_at)}
+              </div>
+              <p class="text-slate-700 leading-relaxed break-words">${escapeHtml(comment.comment_text)}</p>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button onclick="toggleHidden(${comment.id}, ${!comment.is_hidden})" class="px-4 py-2 rounded-xl ${comment.is_hidden ? 'bg-green-600 hover:bg-green-700' : 'bg-amber-600 hover:bg-amber-700'} text-white font-bold">
+                ${comment.is_hidden ? 'Hiện lại' : 'Ẩn'}
+              </button>
+              <button onclick="deleteComment(${comment.id})" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold">Xóa</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function loadAdminComments() {
+      try {
+        saveSecret();
+        setMessage('Đang tải bình luận...');
+        const hiddenFilter = document.getElementById('hiddenFilter').value;
+        const query = hiddenFilter === 'all' ? '' : `?hidden=${hiddenFilter}`;
+        const payload = await adminRequest(`/api/admin-comments${query}`);
+        renderComments(payload.comments || []);
+        setMessage('Đã tải bình luận.', 'success');
+      } catch (error) {
+        setMessage(error.message || 'Không tải được bình luận.', 'error');
+      }
+    }
+
+    async function toggleHidden(id, isHidden) {
+      try {
+        setMessage('Đang cập nhật bình luận...');
+        await adminRequest('/api/admin-comments', {
+          method: 'PATCH',
+          body: JSON.stringify({ id, is_hidden: isHidden })
+        });
+        await loadAdminComments();
+      } catch (error) {
+        setMessage(error.message || 'Không cập nhật được bình luận.', 'error');
+      }
+    }
+
+    async function deleteComment(id) {
+      if (!confirm('Xóa bình luận này? Hành động này không thể hoàn tác.')) return;
+      try {
+        setMessage('Đang xóa bình luận...');
+        await adminRequest(`/api/admin-comments?id=${id}`, { method: 'DELETE' });
+        await loadAdminComments();
+      } catch (error) {
+        setMessage(error.message || 'Không xóa được bình luận.', 'error');
+      }
+    }
+  </script>
+</body>
+
+</html>

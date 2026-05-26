@@ -85,7 +85,7 @@ export async function loadComments(placeId) {
     const encodedPlaceId = encodeURIComponent(String(placeId || '').trim());
     if (!encodedPlaceId) return [];
 
-    return requestSupabase(`${TABLE_NAME}?place_id=eq.${encodedPlaceId}&select=id,place_id,place_name,author_name,rating,comment_text,created_at&order=created_at.desc&limit=${COMMENT_LIMIT}`);
+    return requestSupabase(`${TABLE_NAME}?place_id=eq.${encodedPlaceId}&is_hidden=eq.false&select=id,place_id,place_name,author_name,rating,comment_text,created_at&order=created_at.desc&limit=${COMMENT_LIMIT}`);
 }
 
 export async function submitComment(input) {
