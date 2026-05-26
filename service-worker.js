@@ -1,7 +1,7 @@
 // ViVuTraVinh Service Worker
-// Version 1.1.0
+// Version 1.1.1
 
-const CACHE_NAME = 'vivutravinh-v1.1.0';
+const CACHE_NAME = 'vivutravinh-v1.1.1';
 const APP_SHELL_URLS = [
   './',
   './index.html',
