@@ -1,132 +1,160 @@
-# ViVuTraVinh - Ứng dụng Khám Phá Địa Điểm Trà Vinh
+# ViVuTraVinh
 
-Nền tảng chia sẻ địa điểm ăn uống, du lịch, cafe miễn phí cho cộng đồng Trà Vinh.
-Khám phá những địa điểm đẹp, món ăn ngon và trải nghiệm độc đáo nhất vùng đất Chùa Vàng.
+ViVuTraVinh là website/PWA khám phá địa điểm ăn uống, cà phê, du lịch và dịch vụ tại Trà Vinh. Dự án dùng HTML, CSS và JavaScript thuần, dữ liệu lấy từ Google Sheets API v4, có fallback JSON khi nguồn dữ liệu chính không khả dụng.
 
-## 🚀 Tính năng nổi bật
+## Tính năng chính
 
-### ✨ Mới cập nhật (v2.0)
-- 📱 **PWA Support**: Cài đặt như ứng dụng native trên điện thoại
-- 🔌 **Offline Mode**: Hoạt động ngay cả khi không có internet
-- 📤 **Share Buttons**: Chia sẻ dễ dàng lên Facebook, Zalo, WhatsApp, Twitter
-- ⚡ **Lazy Loading**: Tải ảnh thông minh, tăng tốc độ trang
-- 🎨 **Toast Notifications**: Thông báo trực quan khi thực hiện hành động
-- 🔍 **SEO Optimized**: Meta tags đầy đủ cho Facebook, Twitter
+- Tìm kiếm, lọc và chia địa điểm theo nhóm: ẩm thực, cà phê, du lịch, dịch vụ.
+- Khu vực nổi bật và mới cập nhật.
+- Gợi ý thông minh theo thời gian và giờ hoạt động của địa điểm.
+- Modal chi tiết địa điểm với hình ảnh, giá, giờ mở cửa, địa chỉ, liên hệ, GPS, bản đồ và chia sẻ.
+- Bản đồ tương tác bằng Leaflet.
+- Bình luận và đánh giá địa điểm qua Supabase.
+- Trang quản trị bình luận tại `admin.html`.
+- PWA: manifest, service worker, cache offline, nút cài đặt app.
+- SEO cơ bản: meta tags, structured data, sitemap và robots.txt.
 
-### 🎯 Tính năng cơ bản
-- 🔍 Tìm kiếm và lọc địa điểm
-- 🗺️ Bản đồ tương tác với Leaflet
-- 🌙 Dark Mode
-- ⭐ Đánh giá địa điểm
-- 📝 Đóng góp địa điểm qua Google Form
-- 📱 Responsive design hoàn hảo
+## Chạy local
 
-## 🛠️ Cách sử dụng
-
-### Cách 1: Mở trực tiếp (Static Web App)
-1. Vào thư mục dự án
-2. Click đúp vào file `index.html` để mở trên trình duyệt
-
-### Cách 2: Cài đặt như App (PWA)
-1. Mở website trên Chrome/Edge
-2. Click nút **Download** ở góc phải header
-3. Chọn "Cài đặt"
-4. Mở từ màn hình chính điện thoại/máy tính
-
-### Cách 3: Chạy với Live Server (Recommended)
 ```bash
-# Nếu có Python
+npm install
+npm run dev
+```
+
+Sau đó mở:
+
+```text
+http://localhost:8000
+```
+
+Có thể chạy thay thế bằng:
+
+```bash
 python -m http.server 8000
-
-# Nếu có Node.js với http-server
+# hoặc
 npx http-server -p 8000
-
-# Sau đó mở: http://localhost:8000
 ```
 
-## ⚙️ Cấu hình Dữ liệu
-- **Nguồn dữ liệu**: [Google Sheet](https://docs.google.com/spreadsheets/d/e/2PACX-1vShzpU4sQYUzYJV1TNGbH5O3Ucnczdd1tspWVd3uhsoNO29t6ozYDCNn2J79dMQoYg3B7HktdqUNjTk/pubhtml)
-- **Form đóng góp**: [Google Form](https://forms.gle/8Jw9BvgJEXn7AiWr5)
-- **Fallback**: Tự động dùng dữ liệu mẫu nếu Google Sheets không khả dụng
+Nên chạy qua HTTP/HTTPS, không mở trực tiếp bằng `file://`, vì ES modules, service worker và PWA cần browser security context phù hợp.
 
-## 🛠️ Công nghệ sử dụng
-- **HTML5 & JavaScript (Vanilla)**: Không cần framework nặng nề
-- **Tailwind CSS (CDN)**: Thiết kế giao diện hiện đại, mobile-first
-- **PWA**: Manifest + Service Worker cho offline support
-- **PapaParse**: Xử lý file CSV từ Google Sheet
-- **Swiper**: Hero image slider
-- **AOS**: Scroll animations
-- **Leaflet**: Interactive maps
-- **FontAwesome**: Icons đẹp mắt
-- **Google Fonts**: Nunito & Playfair Display
+## Scripts
 
-## 📁 Cấu trúc dự án
+```bash
+npm run dev
 ```
-web_plugin_demo/
-├── index.html              # Main HTML file
+
+Hiện chưa có script build, lint hoặc test tự động trong `package.json`.
+
+## Cấu trúc dự án
+
+```text
+.
+├── index.html              # Giao diện chính và phần lớn logic UI
+├── admin.html              # Trang quản trị bình luận
+├── api/
+│   └── admin-comments.js   # Vercel serverless API cho moderation
+├── js/
+│   ├── config.js           # Cấu hình Google Sheets và Supabase
+│   ├── data.js             # Load/normalize/cache dữ liệu địa điểm
+│   └── comments.js         # Load/gửi/tổng hợp bình luận Supabase
+├── data/
+│   └── data-fallback.json  # Dữ liệu fallback khi Google Sheets lỗi
 ├── manifest.json           # PWA manifest
-├── service-worker.js       # Service worker for offline
-├── README.md               # This file
-├── PRIORITY_2_IMPROVEMENTS.md  # Documentation
-├── aobaom-8-1024x588.jpg  # Hero image
-├── Thoi-gian-dep-de-di-du-lich-bien-ba-dong.webp
-└── bun-nuoc-leo-tra-vinh-1-1739012793.jpeg
+├── service-worker.js       # Offline cache
+├── sitemap.xml             # Sitemap SEO
+├── robots.txt              # Robots directives
+├── vercel.json             # Cấu hình deploy Vercel/static fallback
+├── GOOGLE_MAPS_GUIDE.md    # Hướng dẫn nhập Google Maps link đúng
+├── GOOGLE_SHEETS_TEMPLATE.md
+└── CLAUDE.md               # Hướng dẫn cho Claude Code
 ```
 
-## 📝 Lưu ý quan trọng
-- Dữ liệu trên Google Sheet cần có cột **"Trạng Thái"** là **"Duyệt"** thì mới hiển thị
-- Hình ảnh từ Google Drive sẽ được tự động chuyển đổi để hiển thị trực tiếp
-- Website tự động fallback về dữ liệu mẫu nếu không kết nối được Google Sheets
-- PWA chỉ hoạt động khi chạy qua HTTP/HTTPS (không phải file://)
+## Nguồn dữ liệu
 
-## 🧪 Testing
+Luồng dữ liệu chính nằm trong `js/data.js`:
 
-### Test PWA Installation:
-1. Chạy website qua HTTP server (không phải file://)
-2. Mở Chrome DevTools > Application > Manifest
-3. Click nút install trong header
-4. Kiểm tra offline: DevTools > Network > Offline
+1. Đọc cấu hình từ `js/config.js` và `window.VIVUTRAVINH_CONFIG` nếu có.
+2. Gọi Google Sheets API v4.
+3. Chuyển các dòng sheet thành object địa điểm.
+4. Chỉ hiển thị địa điểm có trạng thái `Duyệt`, `Duyet` hoặc `approved`.
+5. Chuẩn hoá tên cột tiếng Việt/tiếng Anh về shape mà UI sử dụng.
+6. Cache vào `localStorage` trong 5 phút.
+7. Nếu Google Sheets lỗi, dùng `data/data-fallback.json`.
 
-### Test Share Buttons:
-1. Click vào 1 địa điểm
-2. Cuộn xuống phần "Chia sẻ địa điểm"
-3. Thử các nút share
-4. Kiểm tra toast notifications
+Các trường quan trọng trong sheet:
 
-### Test Lazy Loading:
-1. Mở DevTools > Network > Img
-2. Cuộn trang xuống
-3. Xem ảnh chỉ load khi cần
+- Tên địa điểm.
+- Phân loại/loại hình.
+- Khu vực/địa chỉ.
+- Mức giá.
+- Giờ mở cửa/giờ đóng cửa/trạng thái hoạt động.
+- Link Google Maps hoặc tọa độ GPS.
+- Link hình ảnh.
+- Mô tả, ghi chú, liên hệ.
+- Trạng thái duyệt.
 
-## 🎯 Roadmap
+Xem thêm `GOOGLE_SHEETS_TEMPLATE.md` và `GOOGLE_MAPS_GUIDE.md`.
 
-### Priority 3 (Coming Soon):
-- [ ] Google Analytics integration
-- [ ] Comment/Review system
-- [ ] Advanced filters (price range, rating)
-- [ ] User accounts & favorites sync
-- [ ] Push notifications
-- [ ] Admin dashboard
+## Bình luận và quản trị
 
-## 📊 Performance
-- ⚡ Lighthouse Score: 90+ (Performance)
-- 📱 Mobile-friendly: 100%
-- 🔌 Offline capable: Yes
-- 📤 Shareable: 5+ platforms
+Public comment flow:
 
-## 🤝 Đóng góp
-Bạn có thể đóng góp địa điểm mới qua [Google Form](https://forms.gle/8Jw9BvgJEXn7AiWr5)
+- `index.html` import `js/comments.js`.
+- `js/comments.js` gọi Supabase REST table `place_comments` bằng anon key.
+- Bình luận được validate client-side, có cooldown theo từng địa điểm bằng `localStorage`.
+- Chỉ bình luận `is_hidden = false` được hiển thị công khai.
 
-## 📄 License
-Free to use for Trà Vinh community
+Admin moderation flow:
 
-## 📞 Contact
-- Website: [ViVuTraVinh](https://tienlh1998-jpg.github.io/vivu-travinh-v2/)
-- Issues: Tạo issue trên GitHub
-- Email: Contact via GitHub
+- Mở `admin.html` qua local server hoặc deployment.
+- Nhập `ADMIN_SECRET` đã cấu hình trong môi trường deploy.
+- Trang admin gọi `/api/admin-comments`.
+- API cần các biến môi trường:
+  - `ADMIN_SECRET`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
 
----
+API hỗ trợ:
 
-**Version:** 2.0.0  
-**Last Updated:** 2026-01-29  
-**Status:** ✅ Production Ready
+- `GET /api/admin-comments` để liệt kê bình luận.
+- `PATCH /api/admin-comments` để ẩn/hiện bình luận.
+- `DELETE /api/admin-comments?id=...` để xoá bình luận.
+
+## PWA và cache
+
+`service-worker.js` precache app shell, module JS, fallback JSON và ảnh local. Khi thay đổi file cache quan trọng, nên tăng `CACHE_NAME` để trình duyệt nhận bản mới.
+
+Kiểm tra PWA:
+
+1. Chạy app qua HTTP server.
+2. Mở Chrome DevTools > Application.
+3. Kiểm tra Manifest và Service Worker.
+4. Bật Network > Offline để kiểm tra offline mode.
+
+## Kiểm thử thủ công
+
+Sau thay đổi frontend, nên kiểm tra:
+
+- Trang chủ load được dữ liệu từ Google Sheets hoặc fallback JSON.
+- Search/filter hoạt động.
+- Các section Featured, Latest, Food, Cafe, Travel, Service hiển thị đúng.
+- Smart suggestions cuộn tới section đúng.
+- Modal địa điểm mở/đóng đúng và hiển thị đủ thông tin.
+- Bản đồ Leaflet hiển thị marker đúng.
+- Share buttons và copy link hoạt động.
+- Gửi bình luận, hiển thị rating trung bình và danh sách bình luận.
+- Admin có thể ẩn/hiện/xoá bình luận.
+- Dark mode và responsive mobile.
+- Service worker/PWA không gây lỗi console.
+
+## Deploy
+
+Repo có `vercel.json` cho Vercel/static routing. Nếu deploy bằng GitHub Pages, đảm bảo các API serverless như `/api/admin-comments` sẽ không chạy trên GitHub Pages; phần admin moderation cần môi trường hỗ trợ serverless function như Vercel.
+
+## Ghi chú bảo trì
+
+- Không commit Google API key private hoặc Supabase service role key vào frontend.
+- Google Sheets chỉ nên public dữ liệu được phép hiển thị.
+- Supabase anon key trong frontend phải đi kèm RLS/policy phù hợp.
+- Service role key chỉ dùng trong biến môi trường serverless.
+- Khi đổi cấu trúc sheet, cập nhật `js/data.js`, `data/data-fallback.json` và `GOOGLE_SHEETS_TEMPLATE.md` cùng lúc.
