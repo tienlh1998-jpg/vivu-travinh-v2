@@ -101,16 +101,36 @@ Admin moderation flow:
 - Dashboard có tab `Địa điểm` và `Bình luận`.
 - API cần các biến môi trường:
   - `ADMIN_SECRET`
+  - `IMPORT_SECRET`
   - `SUPABASE_URL`
   - `SUPABASE_SERVICE_ROLE_KEY`
 
 API hỗ trợ:
 
+- `POST /api/import-place` để nhận địa điểm mới từ Google Apps Script và tạo Supabase draft.
 - `GET /api/admin-places` để liệt kê địa điểm.
 - `PATCH /api/admin-places` để sửa thông tin/trạng thái cơ bản của địa điểm.
 - `GET /api/admin-comments` để liệt kê bình luận.
 - `PATCH /api/admin-comments` để ẩn/hiện bình luận.
 - `DELETE /api/admin-comments?id=...` để xoá bình luận.
+
+## Quy trình đóng góp địa điểm
+
+Luồng đóng góp khuyến nghị:
+
+```text
+Google Form → Google Sheets → Apps Script → /api/import-place → Supabase places draft → Admin duyệt → Trang chính
+```
+
+Thiết lập Apps Script:
+
+1. Vào Google Sheet nhận form responses.
+2. Mở Extensions → Apps Script.
+3. Copy nội dung `google-apps-script/import-place.gs` vào script editor.
+4. Đổi `IMPORT_SECRET` trong script cho khớp biến môi trường Vercel.
+5. Chạy `testImportPlace()` để test thủ công.
+6. Tạo trigger cho hàm `onFormSubmit`: event source `From spreadsheet`, event type `On form submit`.
+7. Gửi thử Google Form, rồi vào admin tab `Địa điểm` lọc `Nháp` để duyệt.
 
 ## PWA và cache
 
@@ -148,5 +168,6 @@ Repo có `vercel.json` cho Vercel/static routing và ưu tiên `/api/*` trước
 - Không commit Supabase service role key vào frontend.
 - Supabase anon key trong frontend phải đi kèm RLS/policy phù hợp.
 - Service role key chỉ dùng trong biến môi trường serverless.
+- `IMPORT_SECRET` dùng cho Apps Script, không dùng service role key trong Google Apps Script.
 - Trước khi dùng production, chạy `supabase/places.sql` trong Supabase SQL Editor và migrate dữ liệu địa điểm sang bảng `places`.
 - Khi đổi schema `places`, cập nhật `js/data.js`, `api/admin-places.js`, `data/data-fallback.json` và tài liệu liên quan cùng lúc.
