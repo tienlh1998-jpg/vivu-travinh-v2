@@ -39,6 +39,18 @@ function getSupabaseConfig() {
 }
 
 async function readBody(request) {
+  if (typeof request.body === 'string') {
+    return request.body ? JSON.parse(request.body) : {};
+  }
+
+  if (Buffer.isBuffer(request.body)) {
+    return request.body.length ? JSON.parse(request.body.toString('utf8')) : {};
+  }
+
+  if (request.body && typeof request.body === 'object' && typeof request.body[Symbol.asyncIterator] !== 'function') {
+    return request.body;
+  }
+
   const chunks = [];
   for await (const chunk of request) {
     chunks.push(chunk);

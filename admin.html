@@ -4,17 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản trị bình luận - ViVuTraVinh</title>
+  <title>Quản trị ViVuTraVinh</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="min-h-screen bg-slate-100 text-slate-900">
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <main class="max-w-7xl mx-auto px-4 py-8">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-extrabold">Quản trị bình luận</h1>
-        <p class="text-slate-500 mt-1">Ẩn, hiện lại hoặc xóa bình luận trên ViVuTraVinh.</p>
+        <h1 class="text-3xl font-extrabold">Quản trị ViVuTraVinh</h1>
+        <p class="text-slate-500 mt-1">Quản lý địa điểm và bình luận trên website.</p>
       </div>
       <a href="./" class="text-orange-600 font-bold hover:text-orange-700">Về trang chủ</a>
     </div>
@@ -25,12 +25,103 @@
         <input id="adminSecret" type="password" placeholder="Nhập ADMIN_SECRET đã cấu hình trên Vercel"
           class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500">
         <button onclick="saveSecret()" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-orange-600">Lưu secret</button>
-        <button onclick="loadAdminComments()" class="px-5 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700">Tải bình luận</button>
+        <button onclick="loadCurrentTab()" class="px-5 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700">Tải dữ liệu</button>
       </div>
       <p id="adminMessage" class="text-sm text-slate-500 mt-3"></p>
     </section>
 
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <nav class="flex flex-wrap gap-2 mb-6">
+      <button id="placesTabButton" onclick="showTab('places')" class="px-5 py-3 rounded-xl font-bold bg-orange-600 text-white">Địa điểm</button>
+      <button id="commentsTabButton" onclick="showTab('comments')" class="px-5 py-3 rounded-xl font-bold bg-white text-slate-700 border border-slate-200">Bình luận</button>
+    </nav>
+
+    <section id="placesTab" class="space-y-6">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-5 border-b border-slate-100">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-extrabold">Danh sách địa điểm</h2>
+              <p id="placeCount" class="text-sm text-slate-500 mt-1">Chưa tải dữ liệu.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 w-full lg:w-auto">
+              <input id="placeSearch" type="search" placeholder="Tìm tên, slug, địa chỉ"
+                class="px-4 py-2 rounded-xl border border-slate-200">
+              <select id="placeStatusFilter" class="px-4 py-2 rounded-xl border border-slate-200">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="draft">Nháp</option>
+                <option value="hidden">Đã ẩn</option>
+                <option value="archived">Lưu trữ</option>
+              </select>
+              <input id="placeCategoryFilter" type="text" placeholder="Category"
+                class="px-4 py-2 rounded-xl border border-slate-200">
+              <button onclick="loadAdminPlaces()" class="px-4 py-2 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">Lọc</button>
+            </div>
+          </div>
+        </div>
+        <div id="placesContainer" class="divide-y divide-slate-100"></div>
+      </section>
+
+      <section id="placeEditor" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <h2 class="text-xl font-extrabold">Sửa địa điểm</h2>
+            <p id="placeEditorMeta" class="text-sm text-slate-500 mt-1"></p>
+          </div>
+          <button onclick="closePlaceEditor()" class="text-slate-400 hover:text-slate-700 text-xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="savePlace(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input id="placeId" type="hidden">
+          <label class="block text-sm font-bold">Tên địa điểm
+            <input id="placeName" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Slug
+            <input id="placeSlug" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Category
+            <input id="placeCategory" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Trạng thái
+            <select id="placeStatus" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+              <option value="approved">approved</option>
+              <option value="draft">draft</option>
+              <option value="hidden">hidden</option>
+              <option value="archived">archived</option>
+            </select>
+          </label>
+          <label class="block text-sm font-bold">Khu vực
+            <input id="placeArea" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Địa chỉ
+            <input id="placeAddress" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Link Google Maps
+            <input id="placeMapLink" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Giá
+            <input id="placePriceRaw" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Giờ mở cửa
+            <input id="placeOpeningTime" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200" placeholder="07:00">
+          </label>
+          <label class="block text-sm font-bold">Giờ đóng cửa
+            <input id="placeClosingTime" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200" placeholder="22:00">
+          </label>
+          <label class="block text-sm font-bold">Trạng thái hoạt động
+            <input id="placeOperatingStatus" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200" placeholder="Normal">
+          </label>
+          <label class="block text-sm font-bold">Rating
+            <input id="placeRating" type="number" min="0" max="5" step="0.1" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <div class="md:col-span-2 flex flex-wrap justify-end gap-2 pt-2">
+            <button type="button" onclick="closePlaceEditor()" class="px-5 py-2.5 rounded-xl border border-slate-200 font-bold hover:bg-slate-50">Hủy</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">Lưu địa điểm</button>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <section id="commentsTab" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-5 border-b border-slate-100">
         <div>
           <h2 class="text-xl font-extrabold">Danh sách bình luận</h2>
@@ -48,6 +139,8 @@
 
   <script>
     const SECRET_KEY = 'vivutravinh-admin-secret';
+    let currentTab = 'places';
+    let adminPlaces = [];
 
     document.getElementById('adminSecret').value = sessionStorage.getItem(SECRET_KEY) || '';
 
@@ -65,10 +158,11 @@
       const secret = getSecret();
       if (!secret) {
         setMessage('Vui lòng nhập admin secret.', 'error');
-        return;
+        return false;
       }
       sessionStorage.setItem(SECRET_KEY, secret);
       setMessage('Đã lưu secret trong phiên trình duyệt.', 'success');
+      return true;
     }
 
     async function adminRequest(path, options = {}) {
@@ -103,6 +197,188 @@
         return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
       } catch {
         return '';
+      }
+    }
+
+    function statusLabel(status) {
+      const labels = {
+        approved: 'Đã duyệt',
+        draft: 'Nháp',
+        hidden: 'Đã ẩn',
+        archived: 'Lưu trữ'
+      };
+      return labels[status] || status || 'Không rõ';
+    }
+
+    function statusClass(status) {
+      return {
+        approved: 'bg-green-100 text-green-700',
+        draft: 'bg-slate-100 text-slate-700',
+        hidden: 'bg-amber-100 text-amber-700',
+        archived: 'bg-red-100 text-red-700'
+      }[status] || 'bg-slate-100 text-slate-700';
+    }
+
+    function showTab(tab) {
+      currentTab = tab;
+      document.getElementById('placesTab').classList.toggle('hidden', tab !== 'places');
+      document.getElementById('commentsTab').classList.toggle('hidden', tab !== 'comments');
+      document.getElementById('placesTabButton').className = tab === 'places'
+        ? 'px-5 py-3 rounded-xl font-bold bg-orange-600 text-white'
+        : 'px-5 py-3 rounded-xl font-bold bg-white text-slate-700 border border-slate-200';
+      document.getElementById('commentsTabButton').className = tab === 'comments'
+        ? 'px-5 py-3 rounded-xl font-bold bg-orange-600 text-white'
+        : 'px-5 py-3 rounded-xl font-bold bg-white text-slate-700 border border-slate-200';
+    }
+
+    function loadCurrentTab() {
+      if (currentTab === 'places') return loadAdminPlaces();
+      return loadAdminComments();
+    }
+
+    function clearPublicPlacesCache() {
+      localStorage.removeItem('vivutravinh-places');
+      localStorage.removeItem('vivutravinh-places-v2');
+    }
+
+    function renderPlaces(places) {
+      adminPlaces = places;
+      document.getElementById('placeCount').textContent = `${places.length} địa điểm`;
+      const container = document.getElementById('placesContainer');
+
+      if (!places.length) {
+        container.innerHTML = '<div class="p-6 text-slate-500 italic">Không có địa điểm nào.</div>';
+        return;
+      }
+
+      container.innerHTML = places.map(place => `
+        <article class="p-5 bg-white">
+          <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="font-extrabold text-lg">${escapeHtml(place.name)}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${statusClass(place.status)}">${statusLabel(place.status)}</span>
+                <span class="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700">${escapeHtml(place.category)}</span>
+              </div>
+              <div class="text-sm text-slate-500 mb-2">
+                #${place.id} · ${escapeHtml(place.slug)} · ${escapeHtml(place.area || place.address)} · ${formatDate(place.updated_at || place.created_at)}
+              </div>
+              <div class="text-sm text-slate-600 line-clamp-2">${escapeHtml(place.description || place.address || '')}</div>
+              <div class="text-sm text-slate-500 mt-2">Rating: ${escapeHtml(place.rating ?? '')} · Giờ: ${escapeHtml(place.opening_time || '')} - ${escapeHtml(place.closing_time || '')}</div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 shrink-0">
+              <label class="text-xs font-bold text-slate-500">
+                Trạng thái
+                <select id="placeStatusQuick-${place.id}" class="mt-1 w-full sm:w-40 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700">
+                  <option value="approved" ${place.status === 'approved' ? 'selected' : ''}>Đã duyệt</option>
+                  <option value="hidden" ${place.status === 'hidden' ? 'selected' : ''}>Ẩn</option>
+                  <option value="draft" ${place.status === 'draft' ? 'selected' : ''}>Nháp</option>
+                  <option value="archived" ${place.status === 'archived' ? 'selected' : ''}>Lưu trữ</option>
+                </select>
+              </label>
+              <button onclick="updatePlaceStatusFromSelect(${place.id})" class="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold">Cập nhật</button>
+              <button onclick="openPlaceEditor(${place.id})" class="px-3 py-2 rounded-xl border border-slate-200 font-bold hover:bg-slate-50">Sửa</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function loadAdminPlaces() {
+      try {
+        if (!saveSecret()) return;
+        setMessage('Đang tải địa điểm...');
+        closePlaceEditor();
+        const params = new URLSearchParams();
+        const status = document.getElementById('placeStatusFilter').value;
+        const category = document.getElementById('placeCategoryFilter').value.trim();
+        const q = document.getElementById('placeSearch').value.trim();
+        params.set('status', status);
+        if (category) params.set('category', category);
+        if (q) params.set('q', q);
+        const payload = await adminRequest(`/api/admin-places?${params.toString()}`);
+        renderPlaces(payload.places || []);
+        setMessage('Đã tải địa điểm.', 'success');
+      } catch (error) {
+        setMessage(error.message || 'Không tải được địa điểm.', 'error');
+      }
+    }
+
+    function openPlaceEditor(id) {
+      const place = adminPlaces.find(item => Number(item.id) === Number(id));
+      if (!place) return;
+
+      document.getElementById('placeEditor').classList.remove('hidden');
+      document.getElementById('placeEditorMeta').textContent = `#${place.id} · cập nhật ${formatDate(place.updated_at || place.created_at)}`;
+      document.getElementById('placeId').value = place.id;
+      document.getElementById('placeName').value = place.name || '';
+      document.getElementById('placeSlug').value = place.slug || '';
+      document.getElementById('placeCategory').value = place.category || '';
+      document.getElementById('placeStatus').value = place.status || 'draft';
+      document.getElementById('placeArea').value = place.area || '';
+      document.getElementById('placeAddress').value = place.address || '';
+      document.getElementById('placeMapLink').value = place.map_link || '';
+      document.getElementById('placePriceRaw').value = place.price_raw || '';
+      document.getElementById('placeOpeningTime').value = place.opening_time || '';
+      document.getElementById('placeClosingTime').value = place.closing_time || '';
+      document.getElementById('placeOperatingStatus').value = place.operating_status || 'Normal';
+      document.getElementById('placeRating').value = place.rating ?? '';
+      document.getElementById('placeEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closePlaceEditor() {
+      document.getElementById('placeEditor').classList.add('hidden');
+    }
+
+    function collectPlacePatch() {
+      return {
+        id: Number.parseInt(document.getElementById('placeId').value, 10),
+        name: document.getElementById('placeName').value,
+        slug: document.getElementById('placeSlug').value,
+        category: document.getElementById('placeCategory').value,
+        status: document.getElementById('placeStatus').value,
+        area: document.getElementById('placeArea').value,
+        address: document.getElementById('placeAddress').value,
+        map_link: document.getElementById('placeMapLink').value,
+        price_raw: document.getElementById('placePriceRaw').value,
+        opening_time: document.getElementById('placeOpeningTime').value,
+        closing_time: document.getElementById('placeClosingTime').value,
+        operating_status: document.getElementById('placeOperatingStatus').value,
+        rating: document.getElementById('placeRating').value || 0,
+      };
+    }
+
+    async function savePlace(event) {
+      event.preventDefault();
+      try {
+        setMessage('Đang lưu địa điểm...');
+        await adminRequest('/api/admin-places', {
+          method: 'PATCH',
+          body: JSON.stringify(collectPlacePatch())
+        });
+        clearPublicPlacesCache();
+        await loadAdminPlaces();
+        setMessage('Đã lưu địa điểm.', 'success');
+      } catch (error) {
+        setMessage(error.message || 'Không lưu được địa điểm.', 'error');
+      }
+    }
+
+    async function updatePlaceStatusFromSelect(id) {
+      const select = document.getElementById(`placeStatusQuick-${id}`);
+      if (!select) return;
+
+      try {
+        setMessage('Đang cập nhật trạng thái địa điểm...');
+        await adminRequest('/api/admin-places', {
+          method: 'PATCH',
+          body: JSON.stringify({ id, status: select.value })
+        });
+        clearPublicPlacesCache();
+        await loadAdminPlaces();
+        setMessage('Đã cập nhật trạng thái địa điểm.', 'success');
+      } catch (error) {
+        setMessage(error.message || 'Không cập nhật được địa điểm.', 'error');
       }
     }
 
@@ -142,7 +418,7 @@
 
     async function loadAdminComments() {
       try {
-        saveSecret();
+        if (!saveSecret()) return;
         setMessage('Đang tải bình luận...');
         const hiddenFilter = document.getElementById('hiddenFilter').value;
         const query = hiddenFilter === 'all' ? '' : `?hidden=${hiddenFilter}`;

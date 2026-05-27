@@ -1,6 +1,6 @@
 # ViVuTraVinh
 
-ViVuTraVinh là website/PWA khám phá địa điểm ăn uống, cà phê, du lịch và dịch vụ tại Trà Vinh. Dự án dùng HTML, CSS và JavaScript thuần, dữ liệu lấy từ Google Sheets API v4, có fallback JSON khi nguồn dữ liệu chính không khả dụng.
+ViVuTraVinh là website/PWA khám phá địa điểm ăn uống, cà phê, du lịch và dịch vụ tại Trà Vinh. Dự án dùng HTML, CSS và JavaScript thuần, dữ liệu địa điểm lấy từ Supabase `places`, có fallback JSON khi nguồn dữ liệu chính không khả dụng.
 
 ## Tính năng chính
 
@@ -50,11 +50,12 @@ Hiện chưa có script build, lint hoặc test tự động trong `package.json
 ```text
 .
 ├── index.html              # Giao diện chính và phần lớn logic UI
-├── admin.html              # Trang quản trị bình luận
+├── admin.html              # Dashboard quản trị địa điểm và bình luận
 ├── api/
-│   └── admin-comments.js   # Vercel serverless API cho moderation
+│   ├── admin-comments.js   # Vercel serverless API cho moderation bình luận
+│   └── admin-places.js     # Vercel serverless API quản trị địa điểm
 ├── js/
-│   ├── config.js           # Cấu hình Google Sheets và Supabase
+│   ├── config.js           # Cấu hình Supabase và Google Sheets legacy
 │   ├── data.js             # Load/normalize/cache dữ liệu địa điểm
 │   └── comments.js         # Load/gửi/tổng hợp bình luận Supabase
 ├── data/
@@ -64,6 +65,8 @@ Hiện chưa có script build, lint hoặc test tự động trong `package.json
 ├── sitemap.xml             # Sitemap SEO
 ├── robots.txt              # Robots directives
 ├── vercel.json             # Cấu hình deploy Vercel/static fallback
+├── supabase/
+│   └── places.sql          # SQL schema/RLS cho bảng places
 ├── GOOGLE_MAPS_GUIDE.md    # Hướng dẫn nhập Google Maps link đúng
 ├── GOOGLE_SHEETS_TEMPLATE.md
 └── CLAUDE.md               # Hướng dẫn cho Claude Code
@@ -74,26 +77,13 @@ Hiện chưa có script build, lint hoặc test tự động trong `package.json
 Luồng dữ liệu chính nằm trong `js/data.js`:
 
 1. Đọc cấu hình từ `js/config.js` và `window.VIVUTRAVINH_CONFIG` nếu có.
-2. Gọi Google Sheets API v4.
-3. Chuyển các dòng sheet thành object địa điểm.
-4. Chỉ hiển thị địa điểm có trạng thái `Duyệt`, `Duyet` hoặc `approved`.
-5. Chuẩn hoá tên cột tiếng Việt/tiếng Anh về shape mà UI sử dụng.
-6. Cache vào `localStorage` trong 5 phút.
-7. Nếu Google Sheets lỗi, dùng `data/data-fallback.json`.
+2. Gọi Supabase REST table `places` bằng anon key.
+3. Chỉ lấy địa điểm có `status = approved` theo RLS/policy Supabase.
+4. Chuẩn hoá field snake_case trong Supabase về shape camelCase mà UI sử dụng.
+5. Cache vào `localStorage` trong 5 phút bằng key `vivutravinh-places-v2`.
+6. Nếu Supabase lỗi hoặc chưa có dữ liệu approved, dùng `data/data-fallback.json`.
 
-Các trường quan trọng trong sheet:
-
-- Tên địa điểm.
-- Phân loại/loại hình.
-- Khu vực/địa chỉ.
-- Mức giá.
-- Giờ mở cửa/giờ đóng cửa/trạng thái hoạt động.
-- Link Google Maps hoặc tọa độ GPS.
-- Link hình ảnh.
-- Mô tả, ghi chú, liên hệ.
-- Trạng thái duyệt.
-
-Xem thêm `GOOGLE_SHEETS_TEMPLATE.md` và `GOOGLE_MAPS_GUIDE.md`.
+Schema Supabase cho bảng `places` nằm ở `supabase/places.sql`. Google Sheets hiện chỉ còn là nguồn legacy/tham khảo dữ liệu; xem thêm `GOOGLE_SHEETS_TEMPLATE.md` và `GOOGLE_MAPS_GUIDE.md` nếu cần nhập hoặc migrate dữ liệu thủ công.
 
 ## Bình luận và quản trị
 
@@ -108,7 +98,7 @@ Admin moderation flow:
 
 - Mở `admin.html` qua local server hoặc deployment.
 - Nhập `ADMIN_SECRET` đã cấu hình trong môi trường deploy.
-- Trang admin gọi `/api/admin-comments`.
+- Dashboard có tab `Địa điểm` và `Bình luận`.
 - API cần các biến môi trường:
   - `ADMIN_SECRET`
   - `SUPABASE_URL`
@@ -116,6 +106,8 @@ Admin moderation flow:
 
 API hỗ trợ:
 
+- `GET /api/admin-places` để liệt kê địa điểm.
+- `PATCH /api/admin-places` để sửa thông tin/trạng thái cơ bản của địa điểm.
 - `GET /api/admin-comments` để liệt kê bình luận.
 - `PATCH /api/admin-comments` để ẩn/hiện bình luận.
 - `DELETE /api/admin-comments?id=...` để xoá bình luận.
@@ -135,7 +127,7 @@ Kiểm tra PWA:
 
 Sau thay đổi frontend, nên kiểm tra:
 
-- Trang chủ load được dữ liệu từ Google Sheets hoặc fallback JSON.
+- Trang chủ load được dữ liệu từ Supabase `places` hoặc fallback JSON.
 - Search/filter hoạt động.
 - Các section Featured, Latest, Food, Cafe, Travel, Service hiển thị đúng.
 - Smart suggestions cuộn tới section đúng.
@@ -143,18 +135,18 @@ Sau thay đổi frontend, nên kiểm tra:
 - Bản đồ Leaflet hiển thị marker đúng.
 - Share buttons và copy link hoạt động.
 - Gửi bình luận, hiển thị rating trung bình và danh sách bình luận.
-- Admin có thể ẩn/hiện/xoá bình luận.
+- Admin có thể list/sửa trạng thái địa điểm và ẩn/hiện/xoá bình luận.
 - Dark mode và responsive mobile.
 - Service worker/PWA không gây lỗi console.
 
 ## Deploy
 
-Repo có `vercel.json` cho Vercel/static routing. Nếu deploy bằng GitHub Pages, đảm bảo các API serverless như `/api/admin-comments` sẽ không chạy trên GitHub Pages; phần admin moderation cần môi trường hỗ trợ serverless function như Vercel.
+Repo có `vercel.json` cho Vercel/static routing và ưu tiên `/api/*` trước SPA fallback. Nếu deploy bằng GitHub Pages, các API serverless như `/api/admin-places` và `/api/admin-comments` sẽ không chạy; phần admin cần môi trường hỗ trợ serverless function như Vercel.
 
 ## Ghi chú bảo trì
 
-- Không commit Google API key private hoặc Supabase service role key vào frontend.
-- Google Sheets chỉ nên public dữ liệu được phép hiển thị.
+- Không commit Supabase service role key vào frontend.
 - Supabase anon key trong frontend phải đi kèm RLS/policy phù hợp.
 - Service role key chỉ dùng trong biến môi trường serverless.
-- Khi đổi cấu trúc sheet, cập nhật `js/data.js`, `data/data-fallback.json` và `GOOGLE_SHEETS_TEMPLATE.md` cùng lúc.
+- Trước khi dùng production, chạy `supabase/places.sql` trong Supabase SQL Editor và migrate dữ liệu địa điểm sang bảng `places`.
+- Khi đổi schema `places`, cập nhật `js/data.js`, `api/admin-places.js`, `data/data-fallback.json` và tài liệu liên quan cùng lúc.

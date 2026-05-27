@@ -11,7 +11,7 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export function initConfig(overrides = {}) {
     const runtimeConfig = window.VIVUTRAVINH_CONFIG || {};
 
-    const config = {
+    return {
         sheetId: overrides.sheetId || runtimeConfig.sheetId || SHEET_ID,
         apiKey: overrides.apiKey || runtimeConfig.apiKey || API_KEY,
         sheetName: overrides.sheetName || runtimeConfig.sheetName || SHEET_NAME,
@@ -19,7 +19,15 @@ export function initConfig(overrides = {}) {
         supabaseUrl: overrides.supabaseUrl || runtimeConfig.supabaseUrl || SUPABASE_URL,
         supabaseAnonKey: overrides.supabaseAnonKey || runtimeConfig.supabaseAnonKey || SUPABASE_ANON_KEY,
     };
+}
 
+export function assertSupabaseConfig(config) {
+    if (!config.supabaseUrl || !config.supabaseAnonKey) {
+        throw new Error('Thiếu cấu hình Supabase.');
+    }
+}
+
+export function assertGoogleSheetsConfig(config) {
     if (!config.sheetId) {
         throw new Error('Thiếu SHEET_ID cho Google Sheets API.');
     }
@@ -35,6 +43,4 @@ export function initConfig(overrides = {}) {
     if (!config.range) {
         throw new Error('Thiếu Range cho Google Sheets API.');
     }
-
-    return config;
 }

@@ -1,9 +1,8 @@
 // ViVuTraVinh - Data loading module
-// Phase 1: Google Sheets API v4 + localStorage cache + JSON fallback
 
-import { initConfig } from './config.js';
+import { assertGoogleSheetsConfig, assertSupabaseConfig, initConfig } from './config.js';
 
-const CACHE_KEY = 'vivutravinh-places';
+const CACHE_KEY = 'vivutravinh-places-v2';
 const CACHE_TTL = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 800;
@@ -15,11 +14,28 @@ function sleep(ms) {
 }
 
 function buildSheetsApiUrl(config) {
+    assertGoogleSheetsConfig(config);
     const sheetRange = `${config.sheetName}!${config.range}`;
     const encodedRange = encodeURIComponent(sheetRange);
     const encodedKey = encodeURIComponent(config.apiKey);
 
     return `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/${encodedRange}?key=${encodedKey}`;
+}
+
+function getSupabaseConfig(config) {
+    assertSupabaseConfig(config);
+    return {
+        url: config.supabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, ''),
+        anonKey: config.supabaseAnonKey,
+    };
+}
+
+function buildSupabaseHeaders(anonKey) {
+    return {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+        'Content-Type': 'application/json',
+    };
 }
 
 function readCache() {
@@ -242,6 +258,68 @@ async function fetchWithRetry(url, options = {}, maxRetries = MAX_RETRIES) {
     throw lastError;
 }
 
+function normalizeImagesFromSupabase(row) {
+    if (Array.isArray(row.images) && row.images.length > 0) {
+        return row.images.map(image => convertGoogleDriveLink(image)).filter(Boolean);
+    }
+
+    return parseImages(row.image_link || '');
+}
+
+function normalizeSupabasePlace(row, index) {
+    const images = normalizeImagesFromSupabase(row);
+    const id = normalizeText(row.slug) || normalizeText(row.id) || createSlug(row.name, `location-${index}`);
+    const displayHours = normalizeText(row.display_hours) || parseOperatingHours(`${row.opening_time || ''} - ${row.closing_time || ''}`).displayHours;
+
+    return {
+        id,
+        slug: id,
+        name: normalizeText(row.name),
+        category: normalizeText(row.category),
+        area: normalizeText(row.area),
+        address: normalizeText(row.address),
+        mapLink: normalizeText(row.map_link),
+        priceRaw: normalizeText(row.price_raw),
+        priceFormatted: normalizeText(row.price_raw) || 'Liên hệ',
+        imageLink: images[0] || PLACEHOLDER_IMAGE,
+        imageGallery: images.length > 0 ? images : [PLACEHOLDER_IMAGE],
+        images: images.length > 0 ? images : [PLACEHOLDER_IMAGE],
+        description: normalizeText(row.description),
+        note: normalizeText(row.note),
+        contact: normalizeText(row.contact),
+        coordinates: normalizeText(row.coordinates),
+        contributor: normalizeText(row.contributor) || 'Ẩn danh',
+        rating: Number.parseFloat(row.rating) || 0,
+        openingTime: normalizeText(row.opening_time),
+        closingTime: normalizeText(row.closing_time),
+        displayHours,
+        operatingStatus: normalizeText(row.operating_status) || 'Normal',
+        status: normalizeText(row.status),
+        sortOrder: Number.parseInt(row.sort_order, 10) || 0,
+        isFeatured: Boolean(row.is_featured),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
+
+async function loadPlacesFromSupabase(config) {
+    const { url, anonKey } = getSupabaseConfig(config);
+    const query = 'places?select=id,slug,name,category,area,address,map_link,price_raw,description,note,contact,coordinates,contributor,rating,opening_time,closing_time,display_hours,operating_status,status,images,image_link,sort_order,is_featured,created_at,updated_at&status=eq.approved&order=sort_order.asc,created_at.desc';
+    const response = await fetchWithRetry(`${url}/rest/v1/${query}`, {
+        cache: 'no-store',
+        headers: buildSupabaseHeaders(anonKey),
+    });
+    const payload = await response.json();
+
+    if (!Array.isArray(payload)) {
+        throw new Error('Supabase places trả về dữ liệu không hợp lệ.');
+    }
+
+    return payload
+        .filter(row => normalizeText(row.name))
+        .map((row, index) => normalizeSupabasePlace(row, index));
+}
+
 async function loadPlacesFromGoogleSheets(config) {
     const apiUrl = buildSheetsApiUrl(config);
     const response = await fetchWithRetry(apiUrl, { cache: 'no-store' });
@@ -273,14 +351,14 @@ export async function loadPlaces(configOverrides = {}) {
 
     try {
         const config = initConfig(configOverrides);
-        const places = await loadPlacesFromGoogleSheets(config);
+        const places = await loadPlacesFromSupabase(config);
         if (places.length === 0) {
-            throw new Error('Google Sheet không có địa điểm đã duyệt với đầy đủ tên để hiển thị.');
+            throw new Error('Supabase places chưa có địa điểm approved để hiển thị.');
         }
         writeCache(places);
         return places;
     } catch (apiError) {
-        console.error('[ViVuTraVinh Data] Không tải được Google Sheets API, chuyển sang fallback:', apiError);
+        console.error('[ViVuTraVinh Data] Không tải được Supabase places, chuyển sang fallback:', apiError);
 
         const fallbackPlaces = await loadPlacesFromFallback();
         writeCache(fallbackPlaces);
