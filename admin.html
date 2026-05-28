@@ -114,6 +114,34 @@
           <label class="block text-sm font-bold">Rating
             <input id="placeRating" type="number" min="0" max="5" step="0.1" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
           </label>
+          <label class="block text-sm font-bold">Tọa độ GPS
+            <input id="placeCoordinates" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200" placeholder="9.9347,106.3449">
+          </label>
+          <label class="block text-sm font-bold">Liên hệ
+            <input id="placeContact" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Người đóng góp
+            <input id="placeContributor" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold">Thứ tự sắp xếp
+            <input id="placeSortOrder" type="number" step="1" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="flex items-center gap-2 text-sm font-bold md:col-span-2">
+            <input id="placeIsFeatured" type="checkbox" class="w-4 h-4 rounded border-slate-300">
+            Đánh dấu nổi bật
+          </label>
+          <label class="block text-sm font-bold md:col-span-2">Ảnh đại diện
+            <input id="placeImageLink" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200">
+          </label>
+          <label class="block text-sm font-bold md:col-span-2">Danh sách ảnh, mỗi dòng một URL
+            <textarea id="placeImages" rows="3" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200"></textarea>
+          </label>
+          <label class="block text-sm font-bold md:col-span-2">Mô tả
+            <textarea id="placeDescription" rows="4" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200"></textarea>
+          </label>
+          <label class="block text-sm font-bold md:col-span-2">Ghi chú
+            <textarea id="placeNote" rows="3" class="mt-1 w-full px-4 py-2 rounded-xl border border-slate-200"></textarea>
+          </label>
           <div class="md:col-span-2 flex flex-wrap justify-end gap-2 pt-2">
             <button type="button" onclick="closePlaceEditor()" class="px-5 py-2.5 rounded-xl border border-slate-200 font-bold hover:bg-slate-50">Hủy</button>
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">Lưu địa điểm</button>
@@ -242,6 +270,22 @@
       localStorage.removeItem('vivutravinh-places-v2');
     }
 
+    function getPublicPlaceUrl(slug) {
+      const publicOrigin = 'https://vivutravinh.id.vn';
+      return `${publicOrigin}/?place=${encodeURIComponent(slug || '')}`;
+    }
+
+    function openPublicPlace(slug) {
+      window.open(getPublicPlaceUrl(slug), '_blank', 'noopener');
+    }
+
+    function imageTextareaToArray(value) {
+      return String(value || '')
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
     function renderPlaces(places) {
       adminPlaces = places;
       document.getElementById('placeCount').textContent = `${places.length} địa điểm`;
@@ -278,7 +322,9 @@
                 </select>
               </label>
               <button onclick="updatePlaceStatusFromSelect(${place.id})" class="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold">Cập nhật</button>
+              <button onclick="openPublicPlace('${escapeHtml(place.slug)}')" class="px-3 py-2 rounded-xl border border-blue-200 text-blue-700 font-bold hover:bg-blue-50">Xem</button>
               <button onclick="openPlaceEditor(${place.id})" class="px-3 py-2 rounded-xl border border-slate-200 font-bold hover:bg-slate-50">Sửa</button>
+              ${place.status === 'archived' ? `<button onclick="deletePlace(${place.id}, '${escapeHtml(place.name)}')" class="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold">Xóa vĩnh viễn</button>` : ''}
             </div>
           </div>
         </article>
@@ -324,6 +370,15 @@
       document.getElementById('placeClosingTime').value = place.closing_time || '';
       document.getElementById('placeOperatingStatus').value = place.operating_status || 'Normal';
       document.getElementById('placeRating').value = place.rating ?? '';
+      document.getElementById('placeCoordinates').value = place.coordinates || '';
+      document.getElementById('placeContact').value = place.contact || '';
+      document.getElementById('placeContributor').value = place.contributor || '';
+      document.getElementById('placeSortOrder').value = place.sort_order ?? 0;
+      document.getElementById('placeIsFeatured').checked = Boolean(place.is_featured);
+      document.getElementById('placeImageLink').value = place.image_link || '';
+      document.getElementById('placeImages').value = Array.isArray(place.images) ? place.images.join('\n') : '';
+      document.getElementById('placeDescription').value = place.description || '';
+      document.getElementById('placeNote').value = place.note || '';
       document.getElementById('placeEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -346,6 +401,15 @@
         closing_time: document.getElementById('placeClosingTime').value,
         operating_status: document.getElementById('placeOperatingStatus').value,
         rating: document.getElementById('placeRating').value || 0,
+        coordinates: document.getElementById('placeCoordinates').value,
+        contact: document.getElementById('placeContact').value,
+        contributor: document.getElementById('placeContributor').value,
+        sort_order: document.getElementById('placeSortOrder').value || 0,
+        is_featured: document.getElementById('placeIsFeatured').checked,
+        image_link: document.getElementById('placeImageLink').value,
+        images: imageTextareaToArray(document.getElementById('placeImages').value),
+        description: document.getElementById('placeDescription').value,
+        note: document.getElementById('placeNote').value,
       };
     }
 
@@ -380,6 +444,20 @@
         setMessage('Đã cập nhật trạng thái địa điểm.', 'success');
       } catch (error) {
         setMessage(error.message || 'Không cập nhật được địa điểm.', 'error');
+      }
+    }
+
+    async function deletePlace(id, name) {
+      if (!confirm(`Xóa vĩnh viễn địa điểm "${name}"? Hành động này không thể hoàn tác.`)) return;
+
+      try {
+        setMessage('Đang xóa địa điểm...');
+        await adminRequest(`/api/admin-places?id=${id}`, { method: 'DELETE' });
+        clearPublicPlacesCache();
+        await loadAdminPlaces();
+        setMessage('Đã xóa địa điểm.', 'success');
+      } catch (error) {
+        setMessage(error.message || 'Không xóa được địa điểm.', 'error');
       }
     }
 

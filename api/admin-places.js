@@ -222,6 +222,23 @@ async function updatePlace(request, response) {
   sendJson(response, 200, { place: rows?.[0] || null });
 }
 
+async function deletePlace(request, response) {
+  const url = new URL(request.url, `https://${request.headers.host || 'localhost'}`);
+  const id = Number.parseInt(url.searchParams.get('id'), 10);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    sendJson(response, 400, { error: 'Invalid place id.' });
+    return;
+  }
+
+  await supabaseRequest(`${TABLE_NAME}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+
+  sendJson(response, 200, { ok: true });
+}
+
 export default async function handler(request, response) {
   if (!requireAdmin(request, response)) return;
 
@@ -233,6 +250,11 @@ export default async function handler(request, response) {
 
     if (request.method === 'PATCH') {
       await updatePlace(request, response);
+      return;
+    }
+
+    if (request.method === 'DELETE') {
+      await deletePlace(request, response);
       return;
     }
 
