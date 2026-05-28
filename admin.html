@@ -57,6 +57,7 @@
               <input id="placeCategoryFilter" type="text" placeholder="Category"
                 class="px-4 py-2 rounded-xl border border-slate-200">
               <button onclick="loadAdminPlaces()" class="px-4 py-2 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">Lọc</button>
+              <button onclick="openNewPlaceForm()" class="px-4 py-2 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700">+ Tạo mới</button>
             </div>
           </div>
         </div>
@@ -382,6 +383,34 @@
       document.getElementById('placeEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function openNewPlaceForm() {
+      document.getElementById('placeEditor').classList.remove('hidden');
+      document.getElementById('placeEditorMeta').textContent = 'Tạo địa điểm mới';
+      document.getElementById('placeId').value = '';
+      document.getElementById('placeName').value = '';
+      document.getElementById('placeSlug').value = '';
+      document.getElementById('placeCategory').value = '';
+      document.getElementById('placeStatus').value = 'draft';
+      document.getElementById('placeArea').value = '';
+      document.getElementById('placeAddress').value = '';
+      document.getElementById('placeMapLink').value = '';
+      document.getElementById('placePriceRaw').value = '';
+      document.getElementById('placeOpeningTime').value = '';
+      document.getElementById('placeClosingTime').value = '';
+      document.getElementById('placeOperatingStatus').value = 'Normal';
+      document.getElementById('placeRating').value = '';
+      document.getElementById('placeCoordinates').value = '';
+      document.getElementById('placeContact').value = '';
+      document.getElementById('placeContributor').value = 'Admin';
+      document.getElementById('placeSortOrder').value = '0';
+      document.getElementById('placeIsFeatured').checked = false;
+      document.getElementById('placeImageLink').value = '';
+      document.getElementById('placeImages').value = '';
+      document.getElementById('placeDescription').value = '';
+      document.getElementById('placeNote').value = '';
+      document.getElementById('placeEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function closePlaceEditor() {
       document.getElementById('placeEditor').classList.add('hidden');
     }
@@ -415,15 +444,21 @@
 
     async function savePlace(event) {
       event.preventDefault();
+      const placeId = document.getElementById('placeId').value;
+      const isNew = !placeId;
+
       try {
-        setMessage('Đang lưu địa điểm...');
+        setMessage(isNew ? 'Đang tạo địa điểm...' : 'Đang lưu địa điểm...');
+        const payload = collectPlacePatch();
+        if (isNew) delete payload.id;
+
         await adminRequest('/api/admin-places', {
-          method: 'PATCH',
-          body: JSON.stringify(collectPlacePatch())
+          method: isNew ? 'POST' : 'PATCH',
+          body: JSON.stringify(payload)
         });
         clearPublicPlacesCache();
         await loadAdminPlaces();
-        setMessage('Đã lưu địa điểm.', 'success');
+        setMessage(isNew ? 'Đã tạo địa điểm mới.' : 'Đã lưu địa điểm.', 'success');
       } catch (error) {
         setMessage(error.message || 'Không lưu được địa điểm.', 'error');
       }

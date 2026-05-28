@@ -239,12 +239,68 @@ async function deletePlace(request, response) {
   sendJson(response, 200, { ok: true });
 }
 
+function createSlug(text) {
+  return String(text || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || `dia-diem-${Date.now()}`;
+}
+
+async function slugExists(slug) {
+  const rows = await supabaseRequest(`${TABLE_NAME}?slug=eq.${encodeURIComponent(slug)}&select=id&limit=1`);
+  return Array.isArray(rows) && rows.length > 0;
+}
+
+async function ensureUniqueSlug(preferredSlug, name) {
+  const baseSlug = createSlug(preferredSlug || name);
+  if (!(await slugExists(baseSlug))) return baseSlug;
+
+  return `${baseSlug}-${Date.now().toString(36)}`;
+}
+
+async function createPlace(request, response) {
+  const body = await readBody(request);
+  const patch = sanitizePatch(body);
+
+  if (!patch.name) {
+    sendJson(response, 400, { error: 'name is required.' });
+    return;
+  }
+
+  if (!patch.category) {
+    sendJson(response, 400, { error: 'category is required.' });
+    return;
+  }
+
+  patch.slug = await ensureUniqueSlug(patch.slug, patch.name);
+  patch.status = patch.status || 'draft';
+  patch.operating_status = patch.operating_status || 'Normal';
+  patch.contributor = patch.contributor || 'Admin';
+
+  const rows = await supabaseRequest(TABLE_NAME, {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(patch),
+  });
+
+  sendJson(response, 201, { place: rows?.[0] || null });
+}
+
 export default async function handler(request, response) {
   if (!requireAdmin(request, response)) return;
 
   try {
     if (request.method === 'GET') {
       await listPlaces(request, response);
+      return;
+    }
+
+    if (request.method === 'POST') {
+      await createPlace(request, response);
       return;
     }
 
