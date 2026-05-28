@@ -645,6 +645,38 @@
                                 class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
+                        <!-- Price Filter -->
+                        <div class="relative flex-1 min-w-[120px] md:w-44 md:flex-none">
+                            <select id="priceFilter"
+                                class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
+                                <option value="">Mọi mức giá</option>
+                                <option value="free">Miễn phí</option>
+                                <option value="under50">Dưới 50k</option>
+                                <option value="50to200">50k - 200k</option>
+                                <option value="over200">Trên 200k</option>
+                            </select>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="relative flex-1 min-w-[120px] md:w-40 md:flex-none">
+                            <select id="ratingFilter"
+                                class="w-full pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 focus:border-brand-500 transition-all text-slate-700 dark:text-slate-200 font-medium appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600">
+                                <option value="">Mọi đánh giá</option>
+                                <option value="4">4★ trở lên</option>
+                                <option value="3">3★ trở lên</option>
+                            </select>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        </div>
+
+                        <!-- Open Now Toggle -->
+                        <label class="flex-none flex items-center gap-2 px-4 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-all">
+                            <input type="checkbox" id="openNowFilter" class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">Đang mở</span>
+                        </label>
+
                         <!-- Map Button -->
                         <button onclick="toggleMapView()"
                             class="flex-none bg-slate-900 text-white px-5 py-3.5 rounded-xl hover:bg-brand-600 transition-colors shadow-lg flex items-center justify-center gap-2 font-bold whitespace-nowrap w-full md:w-auto">
@@ -1149,6 +1181,9 @@
             searchInput.addEventListener('input', handleSearch);
             categoryFilter.addEventListener('change', handleSearch);
             areaFilter.addEventListener('change', handleSearch);
+            document.getElementById('priceFilter').addEventListener('change', handleSearch);
+            document.getElementById('ratingFilter').addEventListener('change', handleSearch);
+            document.getElementById('openNowFilter').addEventListener('change', handleSearch);
 
             // Init Swiper
             const swiper = new Swiper(".heroSwiper", {
@@ -1555,13 +1590,38 @@
         }
 
         // SEARCH & LIST LOGIC
+        function parsePriceValue(priceRaw) {
+            if (!priceRaw) return null;
+            const text = String(priceRaw).toLowerCase();
+            if (text.includes('miễn phí') || text.includes('free') || text.includes('mien phi')) return 0;
+            const numbers = String(priceRaw).match(/\d+(?:[.,]\d+)?/g);
+            if (!numbers) return null;
+            const values = numbers.map(n => Number.parseFloat(n.replace(/[.,]/g, '')));
+            return values.length ? Math.max(...values) : null;
+        }
+
+        function matchPriceRange(priceRaw, range) {
+            if (!range) return true;
+            const value = parsePriceValue(priceRaw);
+            if (value === null) return range === 'free' ? false : true;
+            if (range === 'free') return value === 0;
+            if (range === 'under50') return value > 0 && value < 50000;
+            if (range === 'between50and200') return value >= 50000 && value <= 200000;
+            if (range === '50to200') return value >= 50000 && value <= 200000;
+            if (range === 'over200') return value > 200000;
+            return true;
+        }
+
         function handleSearch() {
             const term = searchInput.value.toLowerCase().trim();
             const cat = categoryFilter.value;
             const area = areaFilter.value;
+            const priceRange = document.getElementById('priceFilter')?.value || '';
+            const minRating = Number.parseFloat(document.getElementById('ratingFilter')?.value || '0') || 0;
+            const openNow = document.getElementById('openNowFilter')?.checked || false;
 
             // If filters are empty, show Home View
-            if (!term && !cat && !area) {
+            if (!term && !cat && !area && !priceRange && !minRating && !openNow) {
                 resetToHome();
                 return;
             }
@@ -1572,10 +1632,13 @@
             document.getElementById('listViewTitle').textContent = 'Kết quả tìm kiếm';
 
             const filtered = allLocations.filter(item => {
-                const matchSearch = item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term);
+                const matchSearch = item.name.toLowerCase().includes(term) || (item.description || '').toLowerCase().includes(term);
                 const matchCat = cat === '' || item.category === cat;
                 const matchArea = area === '' || item.area === area;
-                return matchSearch && matchCat && matchArea;
+                const matchPrice = matchPriceRange(item.priceRaw || item.priceFormatted, priceRange);
+                const matchRating = (Number.parseFloat(item.rating) || 0) >= minRating;
+                const matchOpen = !openNow || isLocationOpen(item);
+                return matchSearch && matchCat && matchArea && matchPrice && matchRating && matchOpen;
             });
 
             renderFullList(filtered);
