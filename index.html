@@ -60,6 +60,11 @@
     <!-- Google Fonts: Nunito (Thân thiện) & Playfair Display (Sang trọng) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    <link rel="preconnect" href="https://foyraoimhksfvlxndwxr.supabase.co" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
         rel="stylesheet">
@@ -104,13 +109,13 @@
     </script>
 
     <!-- Swiper JS -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v=20260128"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v=20260128"></script>
 
     <!-- AOS Animation JS -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Structured Data (JSON-LD) for SEO -->
@@ -331,6 +336,19 @@
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        @supports (padding: env(safe-area-inset-bottom)) {
+            #detailModal .fixed.inset-0.z-10 {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        @media (max-width: 640px) {
+            button, a[role="button"], [onclick] {
+                min-height: 44px;
+                min-width: 44px;
+            }
         }
     </style>
 </head>
@@ -685,6 +703,36 @@
 
         <!-- HOME VIEW (SECTIONS) -->
         <div id="homeView" class="hidden space-y-16">
+            <!-- Recently Viewed -->
+            <section id="section-recent" class="hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-3 mb-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <span class="bg-violet-100 text-violet-600 p-2 rounded-lg text-xl"><i
+                                    class="fa-solid fa-clock-rotate-left"></i></span>
+                            👀 Bạn Vừa Xem
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Những địa điểm bạn đã mở gần đây.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-recent"></div>
+            </section>
+
+            <!-- Favorites -->
+            <section id="section-favorites" class="hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-3 mb-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <span class="bg-pink-100 text-pink-600 p-2 rounded-lg text-xl"><i
+                                    class="fa-solid fa-heart"></i></span>
+                            ❤️ Địa Điểm Yêu Thích
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Bộ sưu tập những nơi bạn đánh dấu yêu thích.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-favorites"></div>
+            </section>
+
             <!-- Featured Places -->
             <section id="section-featured">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-3 mb-6">
@@ -887,7 +935,14 @@
                                         <div id="modalHours" class="text-slate-900 dark:text-white font-extrabold">Đang cập nhật</div>
                                     </div>
                                     <div id="modalAddressBlock" class="sm:col-span-2 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 p-4">
-                                        <div class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase mb-1"><i class="fa-solid fa-location-dot mr-1 text-brand-500"></i>Địa chỉ</div>
+                                        <div class="flex items-start justify-between gap-3 mb-1">
+                                            <div class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase"><i class="fa-solid fa-location-dot mr-1 text-brand-500"></i>Địa chỉ</div>
+                                            <a id="modalDirections" href="#" target="_blank" rel="noopener"
+                                                class="hidden shrink-0 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-colors">
+                                                <i class="fa-solid fa-diamond-turn-right"></i>
+                                                <span>Chỉ đường</span>
+                                            </a>
+                                        </div>
                                         <div id="modalAddress" class="text-slate-900 dark:text-white font-semibold leading-relaxed">Đang cập nhật</div>
                                     </div>
                                     <div id="modalContactBlock" class="rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 p-4">
@@ -1358,12 +1413,31 @@
             renderSection('grid-travel', travelItems.slice(0, 4));
             renderSection('grid-service', serviceItems.slice(0, 4));
 
+            renderRecentlyViewed();
+            renderFavorites();
+
             // Refresh animation layout
             setTimeout(() => AOS.refresh(), 100);
 
             // Hide loading, show content
             loadingState.classList.add('hidden');
             homeView.classList.remove('hidden');
+
+            // Deep link: open modal if ?place= is in URL
+            handleDeepLink();
+        }
+
+        function handleDeepLink() {
+            const params = new URLSearchParams(window.location.search);
+            const placeParam = params.get('place');
+            if (!placeParam) return;
+
+            const item = allLocations.find(loc =>
+                loc.id === placeParam || loc.slug === placeParam || loc.name === placeParam
+            );
+            if (item) {
+                setTimeout(() => window.openModal(item.id), 300);
+            }
         }
 
         function renderSection(containerId, items) {
@@ -1378,6 +1452,33 @@
             items.forEach((item, index) => {
                 container.appendChild(createCard(item, index));
             });
+        }
+
+        function renderRecentlyViewed() {
+            const section = document.getElementById('section-recent');
+            const recentIds = JSON.parse(localStorage.getItem('vivu_recent') || '[]');
+            const recentItems = recentIds.map(id => allLocations.find(loc => loc.id === id)).filter(Boolean);
+
+            if (recentItems.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+            renderSection('grid-recent', recentItems.slice(0, 4));
+        }
+
+        function renderFavorites() {
+            const section = document.getElementById('section-favorites');
+            const favItems = allLocations.filter(loc => favorites.includes(loc.id));
+
+            if (favItems.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+            renderSection('grid-favorites', favItems.slice(0, 4));
         }
 
         // CREATE CARD HTML (NEW PREMIUM DESIGN)
@@ -1869,6 +1970,21 @@
                 mapLink.setAttribute('aria-disabled', 'true');
             }
 
+            const directions = document.getElementById('modalDirections');
+            if (directions) {
+                if (item.mapLink || item.coordinates) {
+                    let url = item.mapLink;
+                    if (!url && item.coordinates) {
+                        url = `https://www.google.com/maps?q=${encodeURIComponent(item.coordinates)}`;
+                    }
+                    directions.href = url;
+                    directions.classList.remove('hidden');
+                } else {
+                    directions.href = '#';
+                    directions.classList.add('hidden');
+                }
+            }
+
             let starsHtml = '';
             for (let i = 1; i <= 5; i++) {
                 starsHtml += i <= item.rating ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star text-slate-300"></i>';
@@ -2239,18 +2355,28 @@
         }
 
         // ========================================
-        // ENHANCE OPEN MODAL TO UPDATE SHARE DATA
+        // ENHANCE OPEN MODAL TO UPDATE SHARE DATA + RECENTLY VIEWED
         // ========================================
         const originalOpenModal = window.openModal;
         window.openModal = function (id) {
             const item = allLocations.find(loc => loc.id == id);
             if (item) {
                 updateShareData(item);
+                trackRecentlyViewed(item.id);
             }
             if (originalOpenModal) {
                 originalOpenModal(id);
             }
         };
+
+        function trackRecentlyViewed(id) {
+            const MAX_RECENT = 8;
+            let recent = JSON.parse(localStorage.getItem('vivu_recent') || '[]');
+            recent = recent.filter(r => r !== id);
+            recent.unshift(id);
+            if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+            localStorage.setItem('vivu_recent', JSON.stringify(recent));
+        }
 
         // ========================================
         // LAZY LOADING IMAGES (Intersection Observer)
