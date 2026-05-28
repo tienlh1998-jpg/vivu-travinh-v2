@@ -3,7 +3,7 @@
 import { assertGoogleSheetsConfig, assertSupabaseConfig, initConfig } from './config.js';
 
 const CACHE_KEY = 'vivutravinh-places-v2';
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 60 * 1000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 800;
 const FALLBACK_URL = './data/data-fallback.json';
